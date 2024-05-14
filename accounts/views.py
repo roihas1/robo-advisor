@@ -16,17 +16,17 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 
-from core.models import QuestionnaireA, QuestionnaireB
+# from core.models import QuestionnaireA, QuestionnaireB
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_control
 from django.views.decorators.http import require_http_methods
 
-from core.views import make_investments_inactive
+# from core.views import make_investments_inactive
 from investment.models import Investment
 from service.util import web_actions, data_management
 from service.config import settings as service_settings
 from accounts import forms as account_forms
-from core import views as core_views
+# from core import views as core_views
 
 from .forms import CustomLoginForm
 from .models import InvestorUser, CustomUser

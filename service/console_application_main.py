@@ -69,91 +69,91 @@ if __name__ == '__main__':
             user.update_json_file(settings.USERS_JSON_NAME)
             data_management.save_user_portfolio(user)
 
-        elif selection == 2:  # add new investment to user
-            investment_amount: int = data_management.get_investment_amount()  # get from terminal
-            if investment_amount is not None:
-                __, investments_list = data_management.add_new_investment(user_name, investment_amount)
-                # save investments history
-                data_management.plot_investments_history(user_id, investments_list)
-                # show result
-                data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/investments history.png')
-                # save report according to a new investment
-                # get stocks weights and stocks symbols from db
-                json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
-                stocks_weights = json_data['usersList'][user_name][0]['stocksWeights']
-                stocks_symbols = json_data['usersList'][user_name][0]['stocksSymbols']
-                data_management.view_investment_report(user_id, investment_amount,
-                                                       stocks_weights, stocks_symbols)
-                # show result
-                data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/Investment Report.png')
-
-        elif selection == 3:  # show user portfolio graphs
-            json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
-            collection_number = json_data['usersList'][user_name][0]['stocksCollectionNumber']
-            if data_management.is_today_date_change_from_last_updated_df(collection_number) or data_changed:
-                data_management.get_user_from_db(user_id, user_name)
-
-            # show results
-            data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/sectors_weights_graph.png')
-            data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/stocks_weights_graph.png')
-            data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/estimated_yield_graph.png')
-
-        elif selection == 4:  # forecast specific stock using machine learning
-            stock_name = data_management.get_name()
-            num_of_years_history = data_management.get_num_of_years_history()
-            machine_learning_model = data_management.get_machine_learning_model()
-            models_data: dict = data_management.get_models_data_from_collections_file()
-            plt_instance = research.forecast_specific_stock(str(stock_name), machine_learning_model,
-                                                            models_data, num_of_years_history)
-            operation = 'Forecast'
-            research.save_user_specific_stock(stock_name, operation, plt_instance)
-
-            # show result
-            data_management.plot_image(file_name=f'{settings.RESEARCH_IMAGES}{stock_name}{operation}.png')
-
-        elif selection == 5:  # plotbb_strategy_stock for specific stock
-            stock_name = data_management.get_name()
-            num_of_years_history = data_management.get_num_of_years_history()
-            staring_date, today_date = data_management.get_from_and_to_date(num_of_years_history)
-            plt_instance = research.plot_bb_strategy_stock(str(stock_name), staring_date, today_date)
-            operation = 'BBS Strategy'
-            research.save_user_specific_stock(stock_name, operation, plt_instance)
-
-            # show result
-            data_management.plot_image(file_name=f'{settings.RESEARCH_IMAGES}{stock_name}{operation}.png')
-
-        elif selection == 6:  # discover good stocks
-            filters = [0, 1000000000000, 4, 30, 0.5, 1500, 0.0]
-            sector_name: str = data_management.get_sector_name_from_user()
-            intersection = research.get_stocks_stats(sector_name)
-            sorted_data_tuple, intersection_with_filters, intersection_without_filters = research.sort_good_stocks(
-                intersection, filters)
-            data_management.plot_research_graphs(intersection_with_filters, sector_name, research.LABELS)
-            prefix_str = 'Top Stocks - '
-
-            # show result
-            data_management.plot_image(f'{settings.RESEARCH_IMAGES}{prefix_str}{sector_name} (Graphs).png')
-
-        elif selection == 7:  # plot stat model graph(scatter points)
-            # get choices from user
-            is_machine_learning, model_option, stocks_collection_number = data_management.get_basic_data_from_user()
-            num_of_years_history = settings.NUM_OF_YEARS_HISTORY
-            sub_folder = f'{stocks_collection_number}/{is_machine_learning}{model_option}/'
-
-            stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
-            basic_stock_collection_repository_dir: str = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
-            closing_prices_table_path = f'{basic_stock_collection_repository_dir}{stocks_collection_number}/'
-            data_management.plot_stats_model_graph(
-                stocks_symbols=stocks_symbols, is_machine_learning=is_machine_learning,
-                model_name=settings.MODEL_NAME[model_option], closing_prices_table_path=closing_prices_table_path,
-                sub_folder=sub_folder
-            )
-
-            # show result
-            data_management.plot_image(f'{settings.GRAPH_IMAGES}{sub_folder}all_options.png')
-
-        elif selection == 9:  # dynamic commands for programmers
-            data_management.update_files_from_google_drive()
+        # elif selection == 2:  # add new investment to user
+        #     investment_amount: int = data_management.get_investment_amount()  # get from terminal
+        #     if investment_amount is not None:
+        #         __, investments_list = data_management.add_new_investment(user_name, investment_amount)
+        #         # save investments history
+        #         data_management.plot_investments_history(user_id, investments_list)
+        #         # show result
+        #         data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/investments history.png')
+        #         # save report according to a new investment
+        #         # get stocks weights and stocks symbols from db
+        #         json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
+        #         stocks_weights = json_data['usersList'][user_name][0]['stocksWeights']
+        #         stocks_symbols = json_data['usersList'][user_name][0]['stocksSymbols']
+        #         data_management.view_investment_report(user_id, investment_amount,
+        #                                                stocks_weights, stocks_symbols)
+        #         # show result
+        #         data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/Investment Report.png')
+        #
+        # elif selection == 3:  # show user portfolio graphs
+        #     json_data = data_management.get_json_data(settings.USERS_JSON_NAME)
+        #     collection_number = json_data['usersList'][user_name][0]['stocksCollectionNumber']
+        #     if data_management.is_today_date_change_from_last_updated_df(collection_number) or data_changed:
+        #         data_management.get_user_from_db(user_id, user_name)
+        #
+        #     # show results
+        #     data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/sectors_weights_graph.png')
+        #     data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/stocks_weights_graph.png')
+        #     data_management.plot_image(f'{settings.USER_IMAGES}{user_id}/estimated_yield_graph.png')
+        #
+        # elif selection == 4:  # forecast specific stock using machine learning
+        #     stock_name = data_management.get_name()
+        #     num_of_years_history = data_management.get_num_of_years_history()
+        #     machine_learning_model = data_management.get_machine_learning_model()
+        #     models_data: dict = data_management.get_models_data_from_collections_file()
+        #     plt_instance = research.forecast_specific_stock(str(stock_name), machine_learning_model,
+        #                                                     models_data, num_of_years_history)
+        #     operation = 'Forecast'
+        #     research.save_user_specific_stock(stock_name, operation, plt_instance)
+        #
+        #     # show result
+        #     data_management.plot_image(file_name=f'{settings.RESEARCH_IMAGES}{stock_name}{operation}.png')
+        #
+        # elif selection == 5:  # plotbb_strategy_stock for specific stock
+        #     stock_name = data_management.get_name()
+        #     num_of_years_history = data_management.get_num_of_years_history()
+        #     staring_date, today_date = data_management.get_from_and_to_date(num_of_years_history)
+        #     plt_instance = research.plot_bb_strategy_stock(str(stock_name), staring_date, today_date)
+        #     operation = 'BBS Strategy'
+        #     research.save_user_specific_stock(stock_name, operation, plt_instance)
+        #
+        #     # show result
+        #     data_management.plot_image(file_name=f'{settings.RESEARCH_IMAGES}{stock_name}{operation}.png')
+        #
+        # elif selection == 6:  # discover good stocks
+        #     filters = [0, 1000000000000, 4, 30, 0.5, 1500, 0.0]
+        #     sector_name: str = data_management.get_sector_name_from_user()
+        #     intersection = research.get_stocks_stats(sector_name)
+        #     sorted_data_tuple, intersection_with_filters, intersection_without_filters = research.sort_good_stocks(
+        #         intersection, filters)
+        #     data_management.plot_research_graphs(intersection_with_filters, sector_name, research.LABELS)
+        #     prefix_str = 'Top Stocks - '
+        #
+        #     # show result
+        #     data_management.plot_image(f'{settings.RESEARCH_IMAGES}{prefix_str}{sector_name} (Graphs).png')
+        #
+        # elif selection == 7:  # plot stat model graph(scatter points)
+        #     # get choices from user
+        #     is_machine_learning, model_option, stocks_collection_number = data_management.get_basic_data_from_user()
+        #     num_of_years_history = settings.NUM_OF_YEARS_HISTORY
+        #     sub_folder = f'{stocks_collection_number}/{is_machine_learning}{model_option}/'
+        #
+        #     stocks_symbols = data_management.get_stocks_symbols_from_collection(stocks_collection_number)
+        #     basic_stock_collection_repository_dir: str = settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR
+        #     closing_prices_table_path = f'{basic_stock_collection_repository_dir}{stocks_collection_number}/'
+        #     data_management.plot_stats_model_graph(
+        #         stocks_symbols=stocks_symbols, is_machine_learning=is_machine_learning,
+        #         model_name=settings.MODEL_NAME[model_option], closing_prices_table_path=closing_prices_table_path,
+        #         sub_folder=sub_folder
+        #     )
+        #
+        #     # show result
+        #     data_management.plot_image(f'{settings.GRAPH_IMAGES}{sub_folder}all_options.png')
+        #
+        # elif selection == 9:  # dynamic commands for programmers
+        #     data_management.update_files_from_google_drive()
 
         else:
             break

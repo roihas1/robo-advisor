@@ -150,5 +150,6 @@ def get_menu_choice() -> int:
 def show_main_menu() -> None:
     print("Welcome to the stock market simulator")
     print("Please select one of the following options:")
-    for i, option in enumerate(menu_operations):
+    for i, option in enumerate(menu_operations[:1]):  # TODO: change to menu_operations full list
         print(f"{i + 1} - {option}\n")
+    print(f"2 - {menu_operations[-1]}\n")

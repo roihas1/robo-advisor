@@ -3,8 +3,8 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
-from impl.sector import Sector
-from util import helpers
+from service.impl.sector import Sector
+from service.util import helpers
 
 
 @dataclass(init=True, order=False, frozen=False)

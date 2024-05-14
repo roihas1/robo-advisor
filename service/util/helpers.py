@@ -347,7 +347,7 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
     min_date: str = f"{min_start_year}-{min_start_month}-{min_start_day}"
 
     frame = {}
-    yf.pdr_override()
+    yf.pdr_override()# Override the default settings for data retrieval
     if start_date is None or end_date is None:
         start_date, end_date = get_from_and_to_dates(num_of_years_history)
     file_url: str = f'{location_saving}{file_name}.csv'

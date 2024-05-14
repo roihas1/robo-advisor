@@ -10,7 +10,7 @@ urlpatterns = [
     # More URLs modules
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),
-    path('', include('core.urls')),
+    # path('', include('core.urls')),
     path('', include('investment.urls')),
     path('', include('watchlist.urls')),
     # Third party apps
