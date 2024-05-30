@@ -16,17 +16,17 @@ from service.config import settings
 from service.util import data_management, web_actions
 
 from rest_framework import generics
-from .serializers import ItemSerializer
+from .serializers import investmentSerializer
 
 
-class ItemListCreate(generics.ListCreateAPIView):
+class investmentListCreate(generics.ListCreateAPIView):
     queryset = Investment.objects.all()
-    serializer_class = ItemSerializer
+    serializer_class = investmentSerializer
 
 
-class ItemDetail(generics.RetrieveUpdateDestroyAPIView):
+class investmentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Investment.objects.all()
-    serializer_class = ItemSerializer
+    serializer_class = investmentSerializer
 
 
 # Investment
