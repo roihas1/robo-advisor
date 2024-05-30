@@ -15,6 +15,19 @@ from investment.models import Investment
 from service.config import settings
 from service.util import data_management, web_actions
 
+from rest_framework import generics
+from .serializers import ItemSerializer
+
+
+class ItemListCreate(generics.ListCreateAPIView):
+    queryset = Investment.objects.all()
+    serializer_class = ItemSerializer
+
+
+class ItemDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Investment.objects.all()
+    serializer_class = ItemSerializer
+
 
 # Investment
 @login_required

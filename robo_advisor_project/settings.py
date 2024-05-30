@@ -23,12 +23,15 @@ ALLOWED_HOSTS = ['*']
 #     os.environ.get("HOST_IP", "localhost"),
 # ]
 
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
 SITE_ID: int = None
 # Application definition
 INSTALLED_APPS = [
     # Third party apps
+    'rest_framework',
     'allauth',
-
     'allauth.account',
     'allauth.socialaccount',
     "crispy_bootstrap5",
@@ -129,7 +132,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'robo_advisor_project.wsgi.application'
+# WSGI_APPLICATION = 'robo_advisor_project.wsgi.application'
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:8000').split(" ")
@@ -137,16 +140,16 @@ CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:80
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.environ.get('POSTGRES_DB', 'postgres'),
-#         'USER': os.environ.get('POSTGRES_USER', 'roboadvisor'),
-#         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
-#         'HOST': os.environ.get('AWS_RDS_URL', 'localhost'),
-#         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_DB', 'postgres'),
+        'USER': os.environ.get('POSTGRES_USER', 'postgres'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', '123456'),
+        'HOST': os.environ.get('AWS_RDS_URL', 'localhost'),
+        'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
+    }
+}
 
 CACHES = {
     "default": {

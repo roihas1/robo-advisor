@@ -1,6 +1,8 @@
 from django.urls import path
 
 from investment import views
+from .views import ItemListCreate, ItemDetail
+
 
 urlpatterns = [
     # Investment
@@ -9,5 +11,8 @@ urlpatterns = [
     # Investment Portfolio
     path('profile/portfolio/', views.profile_portfolio, name='profile_portfolio'),
     path('investment/', views.investment_main, name='investments_main'),
-    path('check_positive_amount/', views.check_positive_number, name='check_amount')
+    path('check_positive_amount/', views.check_positive_number, name='check_amount'),
+
+    path('items/', ItemListCreate.as_view(), name='item-list-create'),
+    path('items/<int:pk>/', ItemDetail.as_view(), name='item-detail'),
 ]
