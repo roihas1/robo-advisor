@@ -1,7 +1,7 @@
 from django.urls import path
 
 from investment import views
-from .views import investmentListCreate, investmentDetail
+from .views import *
 
 
 urlpatterns = [
@@ -13,6 +13,8 @@ urlpatterns = [
     path('investment/', views.investment_main, name='investments_main'),
     path('check_positive_amount/', views.check_positive_number, name='check_amount'),
 
-    path('items/', investmentListCreate.as_view(), name='item-list-create'),
-    path('items/<int:pk>/', investmentDetail.as_view(), name='item-detail'),
+    # path('items/', investmentListCreate.as_view(), name='item-list-create'),
+    # path('items/<int:pk>/', investmentDetail.as_view(), name='item-detail'),
+    path('investments/', investment_list),
+    path('investments/<int:id_pk>/', investment_detail)
 ]

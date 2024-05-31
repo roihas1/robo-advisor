@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import BadRequest
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import QuerySet
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 
 from accounts.models import InvestorUser
@@ -17,18 +17,59 @@ from service.util import data_management, web_actions
 
 from rest_framework import generics
 from .serializers import investmentSerializer
+from rest_framework.decorators import api_view
+from rest_framework import status
 
 
-class investmentListCreate(generics.ListCreateAPIView):
-    queryset = Investment.objects.all()
-    serializer_class = investmentSerializer
+# class investmentListCreate(generics.ListCreateAPIView):
+#     queryset = Investment.objects.all()
+#     serializer_class = investmentSerializer
+#
+#
+# class investmentDetail(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Investment.objects.all()
+#     serializer_class = investmentSerializer
 
 
-class investmentDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Investment.objects.all()
-    serializer_class = investmentSerializer
+@api_view(['GET', 'POST'])
+def investment_list(request):
+    if request.method == 'GET':
+        investments = Investment.objects.all()
+        serializer = investmentSerializer(investments, many=True)
+        return JsonResponse(serializer.data, safe=False)
+
+    if request.method == 'POST':
+        serializer = investmentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            # Return a response with the validation errors
+            return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET', 'PUT', 'DELETE'])
+def investment_detail(request, id_pk, format=None):
+
+    try:
+        investment = Investment.objects.get(pk=id_pk)
+    except Investment.DoesNotExist:
+        return JsonResponse(status=status.HTTP_404_NOT_FOUND, data=request.data)
+
+    if request.method == 'GET':
+        serializer = investmentSerializer(investment)
+        return JsonResponse(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = investmentSerializer(investment, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        investment.delete()
+        return JsonResponse(status=status.HTTP_204_NO_CONTENT, data=request.data)
 # Investment
 @login_required
 @require_http_methods(["GET"])
