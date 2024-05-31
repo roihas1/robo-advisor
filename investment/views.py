@@ -71,29 +71,34 @@ def investment_detail(request, id_pk, format=None):
         investment.delete()
         return JsonResponse(status=status.HTTP_204_NO_CONTENT, data=request.data)
 # Investment
-@login_required
+# @login_required
 @require_http_methods(["GET"])
+@api_view(['GET'])
 def investments_list_view(request):
     is_form_filled: bool = _check_if_preferences_form_is_filled(request)
+    # if is_form_filled:
+    #     investments: QuerySet[Investment] = _investments_list_view(request)
+    #     context: dict = {
+    #         'investments': investments,
+    #         'is_form_filled': is_form_filled,
+    #         'title': 'Investments',
+    #         'is_investments_view': False,
+    #         'form': InvestmentsHistoryForm,
+    #     }
+    # else:
+    #     context = {
+    #         'is_form_filled': is_form_filled,
+    #         'title': 'Investments',
+    #         'form': InvestmentsHistoryForm,
+    #     }
     if is_form_filled:
-        investments: QuerySet[Investment] = _investments_list_view(request)
-        context: dict = {
-            'investments': investments,
-            'is_form_filled': is_form_filled,
-            'title': 'Investments',
-            'is_investments_view': False,
-            'form': InvestmentsHistoryForm,
-        }
-    else:
-        context = {
-            'is_form_filled': is_form_filled,
-            'title': 'Investments',
-            'form': InvestmentsHistoryForm,
-        }
-    return render(request, 'investment/my_investments_history.html', context=context)
+        investor_user = InvestorUser.objects.get(id=5)
+        investments = list(Investment.objects.filter(investor_user=investor_user, mode=Investment.Mode.USER).values())
+        print(investments)
+        return JsonResponse(status=status.HTTP_200_OK, data=investments, safe=False)
 
 
-@login_required
+# @login_required
 @require_http_methods(["GET", "POST"])
 def add_investment_view(request):
     is_form_filled: bool = _check_if_preferences_form_is_filled(request)
@@ -143,28 +148,30 @@ def add_investment_view(request):
         raise BadRequest
 
 
-@require_http_methods(["GET"])
-def _investments_list_view(request) -> QuerySet[Investment]:
-    page = request.GET.get("page", None)
-    # Assuming you want to retrieve the single InvestorUser object for the current user
-    investor_user = get_object_or_404(InvestorUser, user=request.user)
-
-    # Now, you can use the retrieved investor_user to filter the investments
-    investments = Investment.objects.filter(investor_user=investor_user, mode=Investment.Mode.USER)
-
-    if request.method == 'GET':
-        paginator = Paginator(investments, per_page=3)
-        try:
-            investments = paginator.page(page)
-        except PageNotAnInteger:
-            investments = paginator.page(1)
-        except EmptyPage:
-            investments = paginator.page(paginator.num_pages)
-    return investments
+# @require_http_methods(["GET"])
+# def _investments_list_view(request) -> QuerySet[Investment]:
+#     page = request.GET.get("page", None)
+#     # Assuming you want to retrieve the single InvestorUser object for the current user
+#     # investor_user = get_object_or_404(InvestorUser, user=request.user)
+#
+#     investor_user = InvestorUser.objects.get(id=5)
+#
+#     # Now, you can use the retrieved investor_user to filter the investments
+#     investments = Investment.objects.filter(investor_user=investor_user, mode=Investment.Mode.USER)
+#
+#     if request.method == 'GET':
+#         paginator = Paginator(investments, per_page=3)
+#         try:
+#             investments = paginator.page(page)
+#         except PageNotAnInteger:
+#             investments = paginator.page(1)
+#         except EmptyPage:
+#             investments = paginator.page(paginator.num_pages)
+#     return investments
 
 
 # Investment Portfolio
-@login_required
+# @login_required
 def investment_main(request):
     context = {
         'title': 'Investments',
@@ -172,7 +179,7 @@ def investment_main(request):
     return render(request, 'investment/investments_main.html', context=context)
 
 
-@login_required
+# @login_required
 def profile_portfolio(request):
     is_form_filled: bool = _check_if_preferences_form_is_filled(request)
     context = {
@@ -184,11 +191,12 @@ def profile_portfolio(request):
     return render(request, 'investment/profile_portfolio.html', context=context)
 
 
-@login_required
+# @login_required
 def _check_if_preferences_form_is_filled(request):
     is_form_filled = True
     try:
-        get_object_or_404(InvestorUser, user=request.user)
+        print(2)
+        # get_object_or_404(InvestorUser, user=request.user)
     except Http404:
         is_form_filled = False
     return is_form_filled
