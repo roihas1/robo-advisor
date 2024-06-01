@@ -176,7 +176,7 @@ def add_investment(request):
 #     return render(request, 'investment/investments_main.html', context=context)
 
 
-
+# shows the user portfolio. this doesnt take any data from the req too. not needed?
 # @login_required
 def profile_portfolio(request):
     is_form_filled: bool = _check_if_preferences_form_is_filled(request)
@@ -200,6 +200,7 @@ def _check_if_preferences_form_is_filled(request):
     return is_form_filled
 
 
+# why a render is needed to check_positive_number?
 def check_positive_number(request):
     form = InvestmentsHistoryForm(request.GET)
     context = {
