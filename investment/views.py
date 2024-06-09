@@ -50,32 +50,32 @@ from rest_framework import status
 #             return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 #
 #
-@api_view(['GET', 'PUT', 'DELETE'])
-def investment_detail(request, id_pk, format=None):
-
-    try:
-        investment = Investment.objects.get(pk=id_pk)
-    except Investment.DoesNotExist:
-        return JsonResponse(status=status.HTTP_404_NOT_FOUND, data=request.data)
-
-    if request.method == 'GET':
-        serializer = investmentSerializer(investment)
-        return JsonResponse(serializer.data)
-
-    elif request.method == 'PUT':
-        serializer = investmentSerializer(investment, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        investment.delete()
-        return JsonResponse(status=status.HTTP_204_NO_CONTENT, data=request.data)
+# @api_view(['GET', 'PUT', 'DELETE'])
+# def investment_detail(request, id_pk, format=None):
+#
+#     try:
+#         investment = Investment.objects.get(pk=id_pk)
+#     except Investment.DoesNotExist:
+#         return JsonResponse(status=status.HTTP_404_NOT_FOUND, data=request.data)
+#
+#     if request.method == 'GET':
+#         serializer = investmentSerializer(investment)
+#         return JsonResponse(serializer.data)
+#
+#     elif request.method == 'PUT':
+#         serializer = investmentSerializer(investment, data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return JsonResponse(serializer.data)
+#         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#     elif request.method == 'DELETE':
+#         investment.delete()
+#         return JsonResponse(status=status.HTTP_204_NO_CONTENT, data=request.data)
 
 
 # Investment
-# @login_required
+@login_required
 # @require_http_methods(["GET"])
 @api_view(['GET'])
 def investments_list_view(request):
@@ -89,7 +89,7 @@ def investments_list_view(request):
 #     else or try except??
 
 
-# @login_required
+@login_required
 @api_view(["POST"])
 def add_investment(request):
     is_form_filled: bool = _check_if_preferences_form_is_filled(request)
@@ -99,8 +99,8 @@ def add_investment(request):
     if request.method == 'POST':
         amount: int = int(request.headers.get('amount', -1))
         if amount > 0:
-            # investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
-            investor_user = InvestorUser.objects.get(id=5)
+            investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
+            # investor_user = InvestorUser.objects.get(id=5)
 
             Investment.objects.create(investor_user=investor_user, amount=amount,
                                       stocks_collection_number=investor_user.stocks_collection_number)
@@ -194,7 +194,7 @@ def _check_if_preferences_form_is_filled(request):
     is_form_filled = True
     try:
         print(2)
-        # get_object_or_404(InvestorUser, user=request.user)
+        get_object_or_404(InvestorUser, user=request.user)
     except Http404:
         is_form_filled = False
     return is_form_filled
