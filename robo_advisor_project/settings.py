@@ -28,6 +28,7 @@ SITE_ID: int = None
 INSTALLED_APPS = [
     # Third party apps
     'allauth',
+    'allauth.account',
     "crispy_bootstrap5",
     "crispy_forms",
     "debug_toolbar",
@@ -53,7 +54,9 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
 
     # for users app
-    'users'
+    'users',
+
+    'rest_framework'
 ]
 
 
@@ -111,7 +114,7 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    # 'allauth.account.middleware.AccountMiddleware'
+    'allauth.account.middleware.AccountMiddleware',
     # Other middleware classes
     'users.middleware.DynamicSiteIDMiddleware',
     # Other middleware classes
@@ -152,8 +155,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('POSTGRES_DB', 'roboadvisor_db'),
-        'USER': os.environ.get('POSTGRES_USER', 'roboadvisor'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'Aa123456'),
+        'USER': os.environ.get('POSTGRES_USER', 'postgres'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'rHas9697'),
         'HOST': os.environ.get('AWS_RDS_URL', 'localhost'),
         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }
@@ -392,8 +395,8 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 
     # `allauth` specific authentication methods, such as login by email
-    # 'allauth.account.auth_backends.AuthenticationBackend',
-    'allauth.users.auth_backends.AuthenticationBackend'
+    'allauth.account.auth_backends.AuthenticationBackend',
+    # 'allauth.users.auth_backends.AuthenticationBackend'
 ]
 
 # AWS S3 Instance - won't work with the free academic user

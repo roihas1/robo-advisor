@@ -230,18 +230,18 @@ def check_login_email(request):
     #     }
     #     return render(request, 'partials/email_validation.html', context)
 
-    def custom_login_view(request):
-        if request.method == 'POST':
-            form = CustomLoginForm(request, data=request.POST)
-            if form.is_valid():
-                # Authenticate user
-                user = form.get_user()
-                login(request, user)
-                # Handle any additional logic
-                return redirect('home')  # Redirect to a different page after login
-        else:
-            form = CustomLoginForm()
-        return render(request, 'account/guest/login.html', {'form': form})
+def custom_login_view(request):
+    if request.method == 'POST':
+        form = CustomLoginForm(request, data=request.POST)
+        if form.is_valid():
+            # Authenticate user
+            user = form.get_user()
+            login(request, user)
+            # Handle any additional logic
+            return redirect('home')  # Redirect to a different page after login
+    else:
+        form = CustomLoginForm()
+    return render(request, 'account/guest/login.html', {'form': form})
 
 
 # @ensure_csrf_cookie
