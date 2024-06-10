@@ -2,8 +2,9 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 
-from accounts.models import InvestorUser
+# from accounts.models import InvestorUser
 from service.util import helpers
+from users.models import InvestorUser
 
 COLLECTION_MIN: int = 1
 COLLECTION_MAX: int = len(helpers.get_collection_json_data().keys()) - 1  # Dynamic code

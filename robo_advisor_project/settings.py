@@ -28,9 +28,7 @@ SITE_ID: int = None
 INSTALLED_APPS = [
     # Third party apps
     'allauth',
-
     'allauth.account',
-    'allauth.socialaccount',
     "crispy_bootstrap5",
     "crispy_forms",
     "debug_toolbar",
@@ -46,7 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'whitenoise.runserver_nostatic',
     # Created apps
-    'accounts',
+    #'accounts',  # This is commented out
     'core',
     'investment',
     'watchlist',
@@ -55,7 +53,18 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.google',
 
+    # for users app
+    'users',
+
+    'rest_framework'
 ]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+}
 
 # Provider specific settings
 SOCIALACCOUNT_PROVIDERS = {
@@ -101,17 +110,22 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Third party apps
-    'accounts.middleware.DynamicSiteIDMiddleware',
+    # 'accounts.middleware.DynamicSiteIDMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'allauth.account.middleware.AccountMiddleware'
+    'allauth.account.middleware.AccountMiddleware',
+    # Other middleware classes
+    'users.middleware.DynamicSiteIDMiddleware',
+    # Other middleware classes
 ]
 
-AUTH_USER_MODEL = 'accounts.CustomUser'
+# AUTH_USER_MODEL = 'accounts.CustomUser'
+AUTH_USER_MODEL = 'users.CustomUser'
 PHONENUMBER_DEFAULT_REGION = "IL"
 
 ROOT_URLCONF = 'robo_advisor_project.urls'
+
 
 TEMPLATES = [
     {
@@ -134,30 +148,34 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:8000').split(" ")
 
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+#Database
+#https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.environ.get('POSTGRES_DB', 'postgres'),
-#         'USER': os.environ.get('POSTGRES_USER', 'roboadvisor'),
-#         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
-#         'HOST': os.environ.get('AWS_RDS_URL', 'localhost'),
-#         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
-#     }
-# }
-
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": f"redis://{IP}:6379",
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_DB', 'roboadvisor_db'),
+        'USER': os.environ.get('POSTGRES_USER', 'postgres'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'rHas9697'),
+        'HOST': os.environ.get('AWS_RDS_URL', 'localhost'),
+        'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }
 }
 
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.redis.RedisCache",
+#         "LOCATION": f"redis://{IP}:6379",
+#     }
+# }
+
+# ACCOUNT_FORMS = {
+#     'login': 'accounts.forms.CustomLoginForm',
+#     'reset_password': 'accounts.forms.CustomResetPasswordForm'
+# }
 ACCOUNT_FORMS = {
-    'login': 'accounts.forms.CustomLoginForm',
-    'reset_password': 'accounts.forms.CustomResetPasswordForm'
+    'login': 'users.forms.CustomLoginForm',
+    'reset_password': 'users.forms.CustomResetPasswordForm'
 }
 
 # Password validation
@@ -351,9 +369,12 @@ JAZZMIN_SETTINGS = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# LOGIN_REDIRECT_URL = 'homepage'
+# LOGIN_URL = 'account_login'
+# LOGOUT_REDIRECT_URL = 'account_logout'
 LOGIN_REDIRECT_URL = 'homepage'
-LOGIN_URL = 'account_login'
-LOGOUT_REDIRECT_URL = 'account_logout'
+LOGIN_URL = 'users_login'
+LOGOUT_REDIRECT_URL = 'users_logout'
 
 # SMTP
 
@@ -375,6 +396,7 @@ AUTHENTICATION_BACKENDS = [
 
     # `allauth` specific authentication methods, such as login by email
     'allauth.account.auth_backends.AuthenticationBackend',
+    # 'allauth.users.auth_backends.AuthenticationBackend'
 ]
 
 # AWS S3 Instance - won't work with the free academic user

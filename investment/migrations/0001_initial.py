@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("accounts", "0001_initial"),
+        ("users", "0001_initial"),
     ]
 
     operations = [
@@ -60,7 +60,7 @@ class Migration(migrations.Migration):
                     "investor_user",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.RESTRICT,
-                        to="accounts.investoruser",
+                        to="users.investoruser",
                     ),
                 ),
             ],
