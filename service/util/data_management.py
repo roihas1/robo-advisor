@@ -25,7 +25,8 @@ from service.impl.sector import Sector
 from service.impl.stats_models import StatsModels
 from service.impl.user import User
 from service.util import draw_table
-from accounts.models import InvestorUser
+# from accounts.models import InvestorUser
+from users.models import InvestorUser
 from service.impl import google_drive
 
 google_drive_instance = google_drive.GoogleDriveInstance()

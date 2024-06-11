@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'whitenoise.runserver_nostatic',
     # Created apps
-    'accounts',
+    #'accounts',  # This is commented out
     'core',
     'investment',
     'watchlist',
@@ -58,7 +58,18 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.google',
 
+    # for users app
+    'users',
+
+    'rest_framework'
 ]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+}
 
 # Provider specific settings
 SOCIALACCOUNT_PROVIDERS = {
@@ -108,13 +119,19 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
+    # Other middleware classes
+    'users.middleware.DynamicSiteIDMiddleware',
+    # Other middleware classes
     'allauth.account.middleware.AccountMiddleware'
 ]
 
-AUTH_USER_MODEL = 'accounts.CustomUser'
+# AUTH_USER_MODEL = 'accounts.CustomUser'
+AUTH_USER_MODEL = 'users.CustomUser'
 PHONENUMBER_DEFAULT_REGION = "IL"
 
 ROOT_URLCONF = 'robo_advisor_project.urls'
+
 
 TEMPLATES = [
     {
@@ -132,7 +149,7 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'robo_advisor_project.wsgi.application'
+WSGI_APPLICATION = 'robo_advisor_project.wsgi.application'
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:8000').split(" ")
@@ -158,9 +175,13 @@ CACHES = {
     }
 }
 
+# ACCOUNT_FORMS = {
+#     'login': 'accounts.forms.CustomLoginForm',
+#     'reset_password': 'accounts.forms.CustomResetPasswordForm'
+# }
 ACCOUNT_FORMS = {
-    'login': 'accounts.forms.CustomLoginForm',
-    'reset_password': 'accounts.forms.CustomResetPasswordForm'
+    'login': 'users.forms.CustomLoginForm',
+    'reset_password': 'users.forms.CustomResetPasswordForm'
 }
 
 # Password validation
@@ -354,9 +375,12 @@ JAZZMIN_SETTINGS = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# LOGIN_REDIRECT_URL = 'homepage'
+# LOGIN_URL = 'account_login'
+# LOGOUT_REDIRECT_URL = 'account_logout'
 LOGIN_REDIRECT_URL = 'homepage'
-LOGIN_URL = 'account_login'
-LOGOUT_REDIRECT_URL = 'account_logout'
+LOGIN_URL = 'users_login'
+LOGOUT_REDIRECT_URL = 'users_logout'
 
 # SMTP
 
@@ -377,7 +401,8 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 
     # `allauth` specific authentication methods, such as login by email
-    'allauth.account.auth_backends.AuthenticationBackend',
+    # 'allauth.account.auth_backends.AuthenticationBackend',
+    'allauth.users.auth_backends.AuthenticationBackend'
 ]
 
 # AWS S3 Instance - won't work with the free academic user

@@ -6,7 +6,8 @@ from django.db.models import QuerySet
 from django.http import Http404, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 
-from accounts.models import InvestorUser
+# from accounts.models import InvestorUser
+from users.models import InvestorUser
 from django.views.decorators.http import require_http_methods
 
 from investment.forms import InvestmentsHistoryForm

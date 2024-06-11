@@ -4,7 +4,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from users import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
     # path('', views.users_list),
     # path('', views.home),
     path('signup/', views.SignUpView.as_view(), name='signup'),
