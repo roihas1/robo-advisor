@@ -23,7 +23,7 @@ class QuestionnaireA(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        app_label = 'core'
+        app_label = 'our_core'
         db_table = 'QuestionnaireA'
         verbose_name = 'Capital Market - Algorithm Preferences'
         verbose_name_plural = 'Capital Market - Algorithm Preferences'
@@ -51,7 +51,7 @@ class QuestionnaireB(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        app_label = 'core'
+        app_label = 'our_core'
         db_table = 'QuestionnaireB'
         verbose_name = 'Capital Market - Investment Preferences'
         verbose_name_plural = 'Capital Market - Investment Preferences'
@@ -70,7 +70,7 @@ class TeamMember(models.Model):
     img = models.CharField(max_length=30, unique=True)
 
     class Meta:
-        app_label = 'core'
+        app_label = 'our_core'
         db_table = 'TeamMember'
         verbose_name = 'Team Member'
         verbose_name_plural = 'Team Member'

@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     # Created apps
     #'accounts',  # This is commented out
-    'our_core',
     'investment',
     'watchlist',
     # Log in with social network account
@@ -60,6 +59,9 @@ INSTALLED_APPS = [
 
     # for users app
     'users',
+
+    'our_core',
+
 ]
 
 

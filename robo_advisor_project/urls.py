@@ -13,8 +13,8 @@ urlpatterns = [
     # More URLs modules
     # path('accounts/', include('accounts.urls')),
     # path('accounts/', include('allauth.urls')),
-    # path('', include('core.urls')),
-    path('users/',include('users.urls')),
+    path('', include('our_core.urls')),
+    path('users/', include('users.urls')),
     path('', include('investment.urls')),
     path('', include('watchlist.urls')),
     # Third party apps

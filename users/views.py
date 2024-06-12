@@ -29,6 +29,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
 from django.core.exceptions import BadRequest
 from users.forms import AccountMetadataForm
+from our_core.models import QuestionnaireA, QuestionnaireB
+
 
 # @api_view(['GET', 'POST'])
 # def users_list(request):

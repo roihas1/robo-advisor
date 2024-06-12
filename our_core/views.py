@@ -16,13 +16,13 @@ from our_core.models import TeamMember, QuestionnaireA, QuestionnaireB
 from users.models import InvestorUser
 
 
-def homepage(request):
-    context = {'team_members': TeamMember.objects.all()}
-    return render(request, 'core/homepage.html', context=context)
+# def homepage(request):
+#     context = {'team_members': TeamMember.objects.all()}
+#     return render(request, 'core/homepage.html', context=context)
 
 
-def about(request):
-    return render(request, 'core/about.html', context={'title': 'About Us'})
+# def about(request):
+#     return render(request, 'core/about.html', context={'title': 'About Us'})
 
 
 @login_required
