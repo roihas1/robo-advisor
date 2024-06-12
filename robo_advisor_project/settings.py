@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     # Created apps
     #'accounts',  # This is commented out
-    'core',
+    'our_core',
     'investment',
     'watchlist',
     # Log in with social network account
@@ -60,8 +60,6 @@ INSTALLED_APPS = [
 
     # for users app
     'users',
-
-    'rest_framework'
 ]
 
 
@@ -123,7 +121,6 @@ MIDDLEWARE = [
     # Other middleware classes
     'users.middleware.DynamicSiteIDMiddleware',
     # Other middleware classes
-    'allauth.account.middleware.AccountMiddleware'
 ]
 
 # AUTH_USER_MODEL = 'accounts.CustomUser'
@@ -168,12 +165,12 @@ DATABASES = {
     }
 }
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": f"redis://{IP}:6379",
-    }
-}
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.redis.RedisCache",
+#         "LOCATION": f"redis://{IP}:6379",
+#     }
+# }
 
 # ACCOUNT_FORMS = {
 #     'login': 'accounts.forms.CustomLoginForm',
@@ -401,8 +398,8 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 
     # `allauth` specific authentication methods, such as login by email
-    # 'allauth.account.auth_backends.AuthenticationBackend',
-    'allauth.users.auth_backends.AuthenticationBackend'
+    'allauth.account.auth_backends.AuthenticationBackend',
+    # 'allauth.users.auth_backends.AuthenticationBackend'
 ]
 
 # AWS S3 Instance - won't work with the free academic user

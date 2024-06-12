@@ -82,8 +82,9 @@ from rest_framework import status
 def investments_list_view(request):
     is_form_filled: bool = _check_if_preferences_form_is_filled(request)
     if is_form_filled:
+        investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
         # just an example, need to sort out authentication
-        investor_user = InvestorUser.objects.get(id=5)
+        # investor_user = InvestorUser.objects.get(id=5)
         investments = list(Investment.objects.filter(investor_user=investor_user, mode=Investment.Mode.USER).values())
         print(investments)
         return JsonResponse(status=status.HTTP_200_OK, data=investments, safe=False)
@@ -93,6 +94,7 @@ def investments_list_view(request):
 @login_required
 @api_view(["POST"])
 def add_investment(request):
+    print('11ds1')
     is_form_filled: bool = _check_if_preferences_form_is_filled(request)
     if is_form_filled is False:
         raise Http404
@@ -101,8 +103,8 @@ def add_investment(request):
         amount: int = int(request.headers.get('amount', -1))
         if amount > 0:
             investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
+            # just an example, need to sort out authentication
             # investor_user = InvestorUser.objects.get(id=5)
-
             Investment.objects.create(investor_user=investor_user, amount=amount,
                                       stocks_collection_number=investor_user.stocks_collection_number)
             investor_user.total_investment_amount += amount
@@ -190,12 +192,16 @@ def profile_portfolio(request):
     return render(request, 'investment/profile_portfolio.html', context=context)
 
 
-# @login_required
+@login_required
 def _check_if_preferences_form_is_filled(request):
     is_form_filled = True
     try:
         print(2)
-        get_object_or_404(InvestorUser, user=request.user)
+        try:
+            get_object_or_404(InvestorUser, user=request.user)
+        except Exception as e:
+            print('error in method')
+        print(3)
     except Http404:
         is_form_filled = False
     return is_form_filled

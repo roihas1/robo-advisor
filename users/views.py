@@ -170,7 +170,7 @@ class AppLoginView(LoginView):
     form_class = CustomLoginForm
 
     def get(self, request, *args, **kwargs):
-        # print(django.middleware.csrf.get_token(request))
+        print(django.middleware.csrf.get_token(request))
         form = self.form_class()
         form_fields = {field.name: field.label for field in form}
         response_data = {
