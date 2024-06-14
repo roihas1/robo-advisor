@@ -1,9 +1,10 @@
 from numbers import Number
+import json
 
 from crispy_forms.utils import render_crispy_form
 from django.contrib import messages
 from django.db import transaction
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.template.context_processors import csrf
@@ -14,7 +15,8 @@ from service.util import data_management
 from our_core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm, AdministrativeToolsForm
 from our_core.models import TeamMember, QuestionnaireA, QuestionnaireB
 from users.models import InvestorUser
-
+from rest_framework.decorators import api_view
+from rest_framework import status
 
 # def homepage(request):
 #     context = {'team_members': TeamMember.objects.all()}
@@ -26,28 +28,33 @@ from users.models import InvestorUser
 
 
 @login_required
-@require_http_methods(["GET", "POST"])
+# @require_http_methods(["GET", "POST"])
+@api_view(["GET", "POST"])
 def administrative_tools_form(request):
     if request.user.is_superuser is False:
-        raise Http404
+        return JsonResponse(status=status.HTTP_403_FORBIDDEN, safe=False)
     if request.method == 'GET':
         models_data: dict[Number] = data_management.get_models_data_from_collections_file()
-        context = {
-            'title': 'Administrative Tools',
-            'form': AdministrativeToolsForm(initial=models_data),
-        }
-        return render(request, 'core/form.html', context=context)
+        # context = {
+        #     'title': 'Administrative Tools',
+        #     'form': AdministrativeToolsForm(initial=models_data),
+        # }
+        # return render(request, 'core/form.html', context=context)
+        return JsonResponse(status=status.HTTP_200_OK, data=models_data, safe=False)
     elif request.method == 'POST':
-        form = AdministrativeToolsForm(request.POST)
-        if form.is_valid():  # CREATE and UPDATE
+        # form = AdministrativeToolsForm(request.POST)
+        data = request.data
+        print(data)
+        try:
+        # if form.is_valid():  # CREATE and UPDATE
             # Access cleaned data from the form
             with transaction.atomic():
-                num_por_simulation = form.cleaned_data['num_por_simulation']
-                min_num_por_simulation = form.cleaned_data['min_num_por_simulation']
-                record_percent_to_predict = form.cleaned_data['record_percent_to_predict']
-                test_size_machine_learning = form.cleaned_data['test_size_machine_learning']
-                selected_ml_model_for_build = form.cleaned_data['selected_ml_model_for_build']
-                gini_v_value = form.cleaned_data['gini_v_value']
+                num_por_simulation = data['num_por_simulation']
+                min_num_por_simulation = data['min_num_por_simulation']
+                record_percent_to_predict = data['record_percent_to_predict']
+                test_size_machine_learning = data['test_size_machine_learning']
+                selected_ml_model_for_build = data['selected_ml_model_for_build']
+                gini_v_value = data['gini_v_value']
                 data_management.update_models_data_settings(
                     num_por_simulation=num_por_simulation,
                     min_num_por_simulation=min_num_por_simulation,
@@ -56,23 +63,27 @@ def administrative_tools_form(request):
                     selected_ml_model_for_build=selected_ml_model_for_build,
                     gini_v_value=gini_v_value,
                 )
-            messages.success(request, message="Successfully updated models' data.")
-            return redirect('administrative_tools_form')
-        else:  # CREATE and UPDATE
-            context = {
-                'title': 'Administrative Tools',
-                'form': form,
-            }
-            ctx = {}
-            ctx.update(csrf(request))
-            form_html = render_crispy_form(form=context['form'], context=ctx)
-            return HttpResponse(form_html)
+            # messages.success(request, message="Successfully updated models' data.")
+            data['message'] = "Successfully updated models' data."
+            return JsonResponse(status=status.HTTP_200_OK, data=data, safe=False)
+        # else:  # CREATE and UPDATE
+        except Exception as e:
+            # context = {
+            #     'title': 'Administrative Tools',
+            #     'form': form,
+            # }
+            # ctx = {}
+            # ctx.update(csrf(request))
+            # form_html = render_crispy_form(form=context['form'], context=ctx)
+            # return HttpResponse(form_html)
+            return JsonResponse(status=status.HTTP_409_CONFLICT, data=None, safe=False)
     else:
-        raise Http404
+        return JsonResponse(status=status.HTTP_400_BAD_REQUEST, safe=False)
 
 
 @login_required
-@require_http_methods(["GET", "POST"])
+# @require_http_methods(["GET", "POST"])
+@api_view(["GET", "POST"])
 def capital_market_algorithm_preferences_form(request):
     try:
         preferences = QuestionnaireA.objects.get(user=request.user)
@@ -80,42 +91,58 @@ def capital_market_algorithm_preferences_form(request):
         preferences = None
     if request.method == 'GET':
         if preferences is None:  # CREATE
-            context = {
-                'title': 'Fill Form',
-                'form': AlgorithmPreferencesForm(form_type='create')
-            }
-            return render(request, 'core/form.html', context=context)
+            # context = {
+            #     'title': 'Fill Form',
+            #     'form': AlgorithmPreferencesForm(form_type='create')
+            # }
+            # return render(request, 'core/form.html', context=context)
+            form = AlgorithmPreferencesForm(form_type='create')
+            return JsonResponse(status=status.HTTP_201_CREATED, data="Created!", safe=False)
         else:  # UPDATE
-            context = {
-                'title': 'Update Filled Form',
-                'form': AlgorithmPreferencesForm(form_type='update', instance=preferences)
-            }
-            return render(request, 'core/form.html', context=context)
+            # context = {
+            #     'title': 'Update Filled Form',
+            #     'form': AlgorithmPreferencesForm(form_type='update', instance=preferences)
+            # }
+            # return render(request, 'core/form.html', context=context)
+            form = AlgorithmPreferencesForm(form_type='update', instance=preferences)
+            return JsonResponse(status=status.HTTP_201_CREATED, data="updated!", safe=False)
     elif request.method == 'POST':
         if preferences is None:  # CREATE
-            form = AlgorithmPreferencesForm(request.POST)
+            # form = AlgorithmPreferencesForm(request.POST)
+            data = request.data
+            questionnaire = QuestionnaireA(user=request.user)
+            questionnaire.ml_answer = data['ml_answer']
+            questionnaire.model_answer = data['model_answer']
+            questionnaire.save()
+            return JsonResponse(status=status.HTTP_201_CREATED, data="Created!", safe=False)
         else:  # UPDATE
-            form = AlgorithmPreferencesForm(request.POST, instance=preferences)
+            # form = AlgorithmPreferencesForm(request.POST, instance=preferences)
+            data = request.data
+            questionnaire = QuestionnaireA.objects.get(user=request.user)
+            questionnaire.ml_answer = data['ml_answer']
+            questionnaire.model_answer = data['model_answer']
+            questionnaire.save()
+            return JsonResponse(status=status.HTTP_201_CREATED, data="updated!", safe=False)
 
-        if form.is_valid():  # CREATE and UPDATE
-            form.instance.user = request.user
-            form.save()
-            return redirect('capital_market_investment_preferences_form')
-        else:  # CREATE and UPDATE
-            context = {
-                'title': 'Update Filled Form',
-                'form': form,
-            }
-            ctx = {}
-            ctx.update(csrf(request))
-            form_html = render_crispy_form(form=context['form'], context=ctx)
-            return HttpResponse(form_html)
+        # if form.is_valid():  # CREATE and UPDATE
+        #     form.instance.user = request.user
+        #     form.save()
+        #     return redirect('capital_market_investment_preferences_form')
+        # else:  # CREATE and UPDATE
+        #     context = {
+        #         'title': 'Update Filled Form',
+        #         'form': form,
+        #     }
+        #     ctx = {}
+        #     ctx.update(csrf(request))
+        #     form_html = render_crispy_form(form=context['form'], context=ctx)
+        #     return HttpResponse(form_html)
     else:
-        raise Http404
+        return JsonResponse(status=status.HTTP_400_BAD_REQUEST, safe=False)
 
 
 @login_required
-@require_http_methods(["GET", "POST"])
+@api_view(["GET", "POST"])
 def capital_market_investment_preferences_form(request):
     try:
         questionnaire_a = get_object_or_404(QuestionnaireA, user=request.user)
