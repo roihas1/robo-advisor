@@ -12,7 +12,7 @@ from django.views.decorators.http import require_http_methods
 
 from service.util import web_actions
 from service.util import data_management
-from our_core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm, AdministrativeToolsForm
+# from our_core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm, AdministrativeToolsForm
 from our_core.models import TeamMember, QuestionnaireA, QuestionnaireB
 from users.models import InvestorUser
 from rest_framework.decorators import api_view
@@ -90,22 +90,23 @@ def capital_market_algorithm_preferences_form(request):
     except QuestionnaireA.DoesNotExist:
         preferences = None
     if request.method == 'GET':
-        if preferences is None:  # CREATE
+        pass
+        # if preferences is None:  # CREATE
             # context = {
             #     'title': 'Fill Form',
             #     'form': AlgorithmPreferencesForm(form_type='create')
             # }
             # return render(request, 'core/form.html', context=context)
-            form = AlgorithmPreferencesForm(form_type='create')
-            return JsonResponse(status=status.HTTP_201_CREATED, data="Created!", safe=False)
-        else:  # UPDATE
+            # form = AlgorithmPreferencesForm(form_type='create')
+            # return JsonResponse(status=status.HTTP_201_CREATED, data="Created!", safe=False)
+        # else:  # UPDATE
             # context = {
             #     'title': 'Update Filled Form',
             #     'form': AlgorithmPreferencesForm(form_type='update', instance=preferences)
             # }
             # return render(request, 'core/form.html', context=context)
-            form = AlgorithmPreferencesForm(form_type='update', instance=preferences)
-            return JsonResponse(status=status.HTTP_201_CREATED, data="updated!", safe=False)
+            # form = AlgorithmPreferencesForm(form_type='update', instance=preferences)
+            # return JsonResponse(status=status.HTTP_201_CREATED, data="updated!", safe=False)
     elif request.method == 'POST':
         if preferences is None:  # CREATE
             # form = AlgorithmPreferencesForm(request.POST)
@@ -114,7 +115,8 @@ def capital_market_algorithm_preferences_form(request):
             questionnaire.ml_answer = data['ml_answer']
             questionnaire.model_answer = data['model_answer']
             questionnaire.save()
-            return JsonResponse(status=status.HTTP_201_CREATED, data="Created!", safe=False)
+            data['message'] = "Successfully created!."
+            return JsonResponse(status=status.HTTP_201_CREATED, data=data, safe=False)
         else:  # UPDATE
             # form = AlgorithmPreferencesForm(request.POST, instance=preferences)
             data = request.data
@@ -122,7 +124,8 @@ def capital_market_algorithm_preferences_form(request):
             questionnaire.ml_answer = data['ml_answer']
             questionnaire.model_answer = data['model_answer']
             questionnaire.save()
-            return JsonResponse(status=status.HTTP_201_CREATED, data="updated!", safe=False)
+            data['message'] = "Successfully Updated!."
+            return JsonResponse(status=status.HTTP_201_CREATED, data=data, safe=False)
 
         # if form.is_valid():  # CREATE and UPDATE
         #     form.instance.user = request.user
@@ -146,6 +149,7 @@ def capital_market_algorithm_preferences_form(request):
 def capital_market_investment_preferences_form(request):
     try:
         questionnaire_a = get_object_or_404(QuestionnaireA, user=request.user)
+        print(questionnaire_a, "wowwwww")
     except Http404:
         return HttpResponse("You must have an instance of QuestionnaireA to fill this form.", status=404)
 
@@ -155,66 +159,85 @@ def capital_market_investment_preferences_form(request):
     except QuestionnaireB.DoesNotExist:
         questionnaire_b = None
         # Retrieve the UserPreferencesA instance for the current user
+
+    #     I don't think we really need the GET??
     if request.method == 'GET':
-        try:
-            investor_user: InvestorUser = InvestorUser.objects.get(user=request.user)
-            stocks_collections_number: str = investor_user.stocks_collection_number
-        except InvestorUser.DoesNotExist:
-            stocks_collections_number: str = '1'
-        if questionnaire_b is None:  # CREATE
-            context = {
-                'title': 'Fill Form',
-                'form': InvestmentPreferencesForm(
-                    form_type='create',
-                    user_preferences_instance=questionnaire_a,
-                    collections_number=stocks_collections_number,
-                )
-            }
-            return render(request, 'core/form.html', context=context)
-        else:  # UPDATE
-            context = {
-                'title': 'Update Filled Form',
-                'form': InvestmentPreferencesForm(
-                    form_type='update',
-                    instance=questionnaire_b,
-                    user_preferences_instance=questionnaire_a,
-                    collections_number=stocks_collections_number,
-                )
-            }
-            return render(request, 'core/form.html', context=context)
+        pass
+    #     try:
+    #         investor_user: InvestorUser = InvestorUser.objects.get(user=request.user)
+    #         stocks_collections_number: str = investor_user.stocks_collection_number
+    #     except InvestorUser.DoesNotExist:
+    #         stocks_collections_number: str = '1'
+    #     if questionnaire_b is None:  # CREATE
+    #         context = {
+    #             'title': 'Fill Form',
+    #             'form': InvestmentPreferencesForm(
+    #                 form_type='create',
+    #                 user_preferences_instance=questionnaire_a,
+    #                 collections_number=stocks_collections_number,
+    #             )
+    #         }
+    #         return render(request, 'core/form.html', context=context)
+    #     else:  # UPDATE
+    #         context = {
+    #             'title': 'Update Filled Form',
+    #             'form': InvestmentPreferencesForm(
+    #                 form_type='update',
+    #                 instance=questionnaire_b,
+    #                 user_preferences_instance=questionnaire_a,
+    #                 collections_number=stocks_collections_number,
+    #             )
+    #         }
+    #         return render(request, 'core/form.html', context=context)
 
     elif request.method == 'POST':
-        if questionnaire_b is None:  # CREATE
-            form = InvestmentPreferencesForm(
-                request.POST,
-                user_preferences_instance=questionnaire_a
-            )
-        else:  # UPDATE
-            form = InvestmentPreferencesForm(
-                request.POST,
-                user_preferences_instance=questionnaire_a,
-                instance=questionnaire_b
-            )
-        if form.is_valid():  # CREATE and UPDATE
+        # if questionnaire_b is None:  # CREATE
+        #     form = InvestmentPreferencesForm(
+        #         request.POST,
+        #         user_preferences_instance=questionnaire_a
+        #     )
+        # else:  # UPDATE
+        #     form = InvestmentPreferencesForm(
+        #         request.POST,
+        #         user_preferences_instance=questionnaire_a,
+        #         instance=questionnaire_b
+        #     )
+        # if form.is_valid():  # CREATE and UPDATE
+        if True:
             # DEBUGGING, without this the code won't work
-            print("", form.errors)
+            # print("", form.errors)
             # Sum answers' values
             try:
                 investor_user: InvestorUser = InvestorUser.objects.get(user=request.user)
                 stocks_collections_number: str = investor_user.stocks_collection_number
             except InvestorUser.DoesNotExist:
                 stocks_collections_number: str = '1'
-            answer_1_value = int(form.cleaned_data['answer_1'])
-            answer_2_value = int(form.cleaned_data['answer_2'])
-            answer_3_value = int(form.cleaned_data['answer_3'])
-            answers_sum = answer_1_value + answer_2_value + answer_3_value
+            # answer_1_value = int(form.cleaned_data['answer_1'])
+            # answer_2_value = int(form.cleaned_data['answer_2'])
+            # answer_3_value = int(form.cleaned_data['answer_3'])
+            # answers_sum = answer_1_value + answer_2_value + answer_3_value
             # Form instance
-            questionnaire_b: QuestionnaireB = form.instance
-            questionnaire_b.user = request.user
-            questionnaire_b.answers_sum = answers_sum
-            questionnaire_b.save()
-            form.save()
-
+            # questionnaire_b: QuestionnaireB = form.instance
+            # questionnaire_b.user = request.user
+            # questionnaire_b.answers_sum = answers_sum
+            # questionnaire_b.save()
+            # form.save()
+            data = request.data
+            if questionnaire_b is None:
+                questionnaire_b = QuestionnaireB(user=request.user)
+                questionnaire_b.answer_1 = data['answer_1']
+                questionnaire_b.answer_2 = data['answer_2']
+                questionnaire_b.answer_3 = data['answer_3']
+                answers_sum = data['answer_1'] + data['answer_2'] + data['answer_3']
+                questionnaire_b.answers_sum = answers_sum
+                questionnaire_b.save()
+            else:
+                questionnaire_b.answer_1 = data['answer_1']
+                questionnaire_b.answer_2 = data['answer_2']
+                questionnaire_b.answer_3 = data['answer_3']
+                answers_sum = data['answer_1'] + data['answer_2'] + data['answer_3']
+                questionnaire_b.answers_sum = answers_sum
+                questionnaire_b.save()
             (
                 annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
                 risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change, portfolio) \
@@ -222,6 +245,7 @@ def capital_market_investment_preferences_form(request):
             try:
                 investor_user = InvestorUser.objects.get(user=request.user)
                 # If we get here, it means that the user is on UPDATE form (there is InvestorUser instance)
+                print("updateeeeeeeeeeeee")
                 investor_user.risk_level = risk_level
                 investor_user.stocks_symbols = stocks_symbols
                 investor_user.stocks_weights = stocks_weights
@@ -234,6 +258,10 @@ def capital_market_investment_preferences_form(request):
                 investor_user.total_change = total_change
                 investor_user.monthly_change = monthly_change
                 investor_user.daily_change = daily_change
+                # how there wasn't  a save originally?!?!!!?
+                investor_user.save()
+                data['message'] = "Successfully Updated!."
+                return JsonResponse(status=status.HTTP_201_CREATED, data=data, safe=False)
             except InvestorUser.DoesNotExist:
                 # If we get here, it means that the user is on CREATE form (no InvestorUser instance)
                 InvestorUser.objects.create(
@@ -253,16 +281,18 @@ def capital_market_investment_preferences_form(request):
                     daily_change=daily_change,
                 )
             # Frontend
-            web_actions.save_three_user_graphs_as_png(user=request.user, portfolio=portfolio)
-            return redirect('profile_portfolio')
+            # web_actions.save_three_user_graphs_as_png(user=request.user, portfolio=portfolio)
+            data['message'] = "Successfully Created!."
+            return JsonResponse(status=status.HTTP_201_CREATED, data=data, safe=False)
+            # return redirect('profile_portfolio')
 
-        else:  # CREATE and UPDATE
-            context = {
-                'form': form,
-            }
-            ctx = {}
-            ctx.update(csrf(request))
-            form_html = render_crispy_form(form=context['form'], context=ctx)
-            return HttpResponse(form_html)
+        # else:  # CREATE and UPDATE
+        #     context = {
+        #         'form': form,
+        #     }
+        #     ctx = {}
+        #     ctx.update(csrf(request))
+        #     form_html = render_crispy_form(form=context['form'], context=ctx)
+        #     return HttpResponse(form_html)
     else:
         raise Http404
