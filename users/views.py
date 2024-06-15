@@ -29,6 +29,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
 from django.core.exceptions import BadRequest
 from users.forms import AccountMetadataForm
+from .serializers import CustomUserSerializer
+
 
 # @api_view(['GET', 'POST'])
 # def users_list(request):
@@ -171,11 +173,13 @@ class AppLoginView(LoginView):
 
     def get(self, request, *args, **kwargs):
         # print(django.middleware.csrf.get_token(request))
+        token = django.middleware.csrf.get_token(request)
         form = self.form_class()
         form_fields = {field.name: field.label for field in form}
         response_data = {
             'form': form_fields,
-            'title': "Login"
+            'title': "Login",
+            "token":token
         }
         return JsonResponse(response_data, status=200)
 
@@ -244,8 +248,26 @@ def custom_login_view(request):
     return render(request, 'account/guest/login.html', {'form': form})
 
 
+@csrf_exempt
+def login_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        password = data.get('password')
+
+        user = authenticate(request, username=email, password=password)
+
+        if user is not None:
+            login(request, user)
+            user_data = CustomUserSerializer(user).data
+            return JsonResponse({'status': 'successful',"user":user_data}, status=200)
+        else:
+            return JsonResponse({'status': 'wrong password/username'}, status=400)
+    return JsonResponse({'status': 'invalid method'}, status=405)
+
 # @ensure_csrf_cookie
 # @csrf_protect
+@api_view(['POST','GET'])
 def custom_login_system(request):
         try:
             data = json.loads(request.body)
