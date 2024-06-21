@@ -61,7 +61,7 @@ INSTALLED_APPS = [
     'users',
 
     'our_core',
-
+    'data_mgmt'
 ]
 
 

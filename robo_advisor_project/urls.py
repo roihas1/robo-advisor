@@ -14,6 +14,7 @@ urlpatterns = [
     # path('accounts/', include('accounts.urls')),
     # path('accounts/', include('allauth.urls')),
     path('our_core/', include('our_core.urls')),
+    path('data_mgmt/', include('data_mgmt.urls')),
     path('users/', include('users.urls')),
     path('', include('investment.urls')),
     path('', include('watchlist.urls')),

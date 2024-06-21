@@ -1,22 +1,22 @@
 from numbers import Number
 import json
-
+from django.template.context_processors import csrf
+from django.views.decorators.http import require_http_methods
 from crispy_forms.utils import render_crispy_form
 from django.contrib import messages
 from django.db import transaction
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.template.context_processors import csrf
-from django.views.decorators.http import require_http_methods
+from rest_framework.decorators import api_view
+from rest_framework import status
 
 from service.util import web_actions
 from service.util import data_management
 # from our_core.forms import AlgorithmPreferencesForm, InvestmentPreferencesForm, AdministrativeToolsForm
 from our_core.models import TeamMember, QuestionnaireA, QuestionnaireB
 from users.models import InvestorUser
-from rest_framework.decorators import api_view
-from rest_framework import status
+
 
 # def homepage(request):
 #     context = {'team_members': TeamMember.objects.all()}
@@ -281,7 +281,7 @@ def capital_market_investment_preferences_form(request):
                     daily_change=daily_change,
                 )
             # Frontend
-            # web_actions.save_three_user_graphs_as_png(user=request.user, portfolio=portfolio)
+            web_actions.save_three_user_graphs_as_png(user=request.user, portfolio=portfolio)
             data['message'] = "Successfully Created!."
             return JsonResponse(status=status.HTTP_201_CREATED, data=data, safe=False)
             # return redirect('profile_portfolio')
