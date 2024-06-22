@@ -83,31 +83,13 @@ def administrative_tools_form(request):
 
 @login_required
 # @require_http_methods(["GET", "POST"])
-@api_view(["GET", "POST"])
+@api_view(["POST"])
 def capital_market_algorithm_preferences_form(request):
     try:
         preferences = QuestionnaireA.objects.get(user=request.user)
     except QuestionnaireA.DoesNotExist:
         preferences = None
-    if request.method == 'GET':
-        pass
-        # if preferences is None:  # CREATE
-            # context = {
-            #     'title': 'Fill Form',
-            #     'form': AlgorithmPreferencesForm(form_type='create')
-            # }
-            # return render(request, 'core/form.html', context=context)
-            # form = AlgorithmPreferencesForm(form_type='create')
-            # return JsonResponse(status=status.HTTP_201_CREATED, data="Created!", safe=False)
-        # else:  # UPDATE
-            # context = {
-            #     'title': 'Update Filled Form',
-            #     'form': AlgorithmPreferencesForm(form_type='update', instance=preferences)
-            # }
-            # return render(request, 'core/form.html', context=context)
-            # form = AlgorithmPreferencesForm(form_type='update', instance=preferences)
-            # return JsonResponse(status=status.HTTP_201_CREATED, data="updated!", safe=False)
-    elif request.method == 'POST':
+    if request.method == 'POST':
         if preferences is None:  # CREATE
             # form = AlgorithmPreferencesForm(request.POST)
             data = request.data
@@ -126,26 +108,12 @@ def capital_market_algorithm_preferences_form(request):
             questionnaire.save()
             data['message'] = "Successfully Updated!."
             return JsonResponse(status=status.HTTP_201_CREATED, data=data, safe=False)
-
-        # if form.is_valid():  # CREATE and UPDATE
-        #     form.instance.user = request.user
-        #     form.save()
-        #     return redirect('capital_market_investment_preferences_form')
-        # else:  # CREATE and UPDATE
-        #     context = {
-        #         'title': 'Update Filled Form',
-        #         'form': form,
-        #     }
-        #     ctx = {}
-        #     ctx.update(csrf(request))
-        #     form_html = render_crispy_form(form=context['form'], context=ctx)
-        #     return HttpResponse(form_html)
     else:
         return JsonResponse(status=status.HTTP_400_BAD_REQUEST, safe=False)
 
 
 @login_required
-@api_view(["GET", "POST"])
+@api_view(["POST"])
 def capital_market_investment_preferences_form(request):
     try:
         questionnaire_a = get_object_or_404(QuestionnaireA, user=request.user)
@@ -160,139 +128,73 @@ def capital_market_investment_preferences_form(request):
         questionnaire_b = None
         # Retrieve the UserPreferencesA instance for the current user
 
-    #     I don't think we really need the GET??
-    if request.method == 'GET':
-        pass
-    #     try:
-    #         investor_user: InvestorUser = InvestorUser.objects.get(user=request.user)
-    #         stocks_collections_number: str = investor_user.stocks_collection_number
-    #     except InvestorUser.DoesNotExist:
-    #         stocks_collections_number: str = '1'
-    #     if questionnaire_b is None:  # CREATE
-    #         context = {
-    #             'title': 'Fill Form',
-    #             'form': InvestmentPreferencesForm(
-    #                 form_type='create',
-    #                 user_preferences_instance=questionnaire_a,
-    #                 collections_number=stocks_collections_number,
-    #             )
-    #         }
-    #         return render(request, 'core/form.html', context=context)
-    #     else:  # UPDATE
-    #         context = {
-    #             'title': 'Update Filled Form',
-    #             'form': InvestmentPreferencesForm(
-    #                 form_type='update',
-    #                 instance=questionnaire_b,
-    #                 user_preferences_instance=questionnaire_a,
-    #                 collections_number=stocks_collections_number,
-    #             )
-    #         }
-    #         return render(request, 'core/form.html', context=context)
-
-    elif request.method == 'POST':
-        # if questionnaire_b is None:  # CREATE
-        #     form = InvestmentPreferencesForm(
-        #         request.POST,
-        #         user_preferences_instance=questionnaire_a
-        #     )
-        # else:  # UPDATE
-        #     form = InvestmentPreferencesForm(
-        #         request.POST,
-        #         user_preferences_instance=questionnaire_a,
-        #         instance=questionnaire_b
-        #     )
-        # if form.is_valid():  # CREATE and UPDATE
-        if True:
-            # DEBUGGING, without this the code won't work
-            # print("", form.errors)
-            # Sum answers' values
-            try:
-                investor_user: InvestorUser = InvestorUser.objects.get(user=request.user)
-                stocks_collections_number: str = investor_user.stocks_collection_number
-            except InvestorUser.DoesNotExist:
-                stocks_collections_number: str = '1'
-            # answer_1_value = int(form.cleaned_data['answer_1'])
-            # answer_2_value = int(form.cleaned_data['answer_2'])
-            # answer_3_value = int(form.cleaned_data['answer_3'])
-            # answers_sum = answer_1_value + answer_2_value + answer_3_value
-            # Form instance
-            # questionnaire_b: QuestionnaireB = form.instance
-            # questionnaire_b.user = request.user
-            # questionnaire_b.answers_sum = answers_sum
-            # questionnaire_b.save()
-            # form.save()
-            data = request.data
-            if questionnaire_b is None:
-                questionnaire_b = QuestionnaireB(user=request.user)
-                questionnaire_b.answer_1 = data['answer_1']
-                questionnaire_b.answer_2 = data['answer_2']
-                questionnaire_b.answer_3 = data['answer_3']
-                answers_sum = data['answer_1'] + data['answer_2'] + data['answer_3']
-                questionnaire_b.answers_sum = answers_sum
-                questionnaire_b.save()
-            else:
-                questionnaire_b.answer_1 = data['answer_1']
-                questionnaire_b.answer_2 = data['answer_2']
-                questionnaire_b.answer_3 = data['answer_3']
-                answers_sum = data['answer_1'] + data['answer_2'] + data['answer_3']
-                questionnaire_b.answers_sum = answers_sum
-                questionnaire_b.save()
-            (
-                annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
-                risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change, portfolio) \
-                = web_actions.create_portfolio_and_get_data(answers_sum, stocks_collections_number, questionnaire_a)
-            try:
-                investor_user = InvestorUser.objects.get(user=request.user)
-                # If we get here, it means that the user is on UPDATE form (there is InvestorUser instance)
-                print("updateeeeeeeeeeeee")
-                investor_user.risk_level = risk_level
-                investor_user.stocks_symbols = stocks_symbols
-                investor_user.stocks_weights = stocks_weights
-                investor_user.sectors_names = sectors_names
-                investor_user.sectors_weights = sectors_weights
-                investor_user.annual_returns = annual_returns
-                investor_user.annual_max_loss = annual_max_loss
-                investor_user.annual_volatility = annual_volatility
-                investor_user.annual_sharpe = annual_sharpe
-                investor_user.total_change = total_change
-                investor_user.monthly_change = monthly_change
-                investor_user.daily_change = daily_change
-                # how there wasn't  a save originally?!?!!!?
-                investor_user.save()
-                data['message'] = "Successfully Updated!."
-                return JsonResponse(status=status.HTTP_201_CREATED, data=data, safe=False)
-            except InvestorUser.DoesNotExist:
-                # If we get here, it means that the user is on CREATE form (no InvestorUser instance)
-                InvestorUser.objects.create(
-                    user=request.user,
-                    risk_level=risk_level,
-                    total_investment_amount=0,
-                    stocks_symbols=stocks_symbols,
-                    stocks_weights=stocks_weights,
-                    sectors_names=sectors_names,
-                    sectors_weights=sectors_weights,
-                    annual_returns=annual_returns,
-                    annual_max_loss=annual_max_loss,
-                    annual_volatility=annual_volatility,
-                    annual_sharpe=annual_sharpe,
-                    total_change=total_change,
-                    monthly_change=monthly_change,
-                    daily_change=daily_change,
-                )
-            # Frontend
-            web_actions.save_three_user_graphs_as_png(user=request.user, portfolio=portfolio)
-            data['message'] = "Successfully Created!."
+    if request.method == 'POST':
+        # DEBUGGING, without this the code won't work
+        # print("", form.errors)
+        # Sum answers' values
+        data = request.data
+        stocks_collection_number: str = str(data['stocks_symbols'])
+        if questionnaire_b is None:
+            questionnaire_b = QuestionnaireB(user=request.user)
+            questionnaire_b.answer_1 = data['answer_1']
+            questionnaire_b.answer_2 = data['answer_2']
+            questionnaire_b.answer_3 = data['answer_3']
+            answers_sum = data['answer_1'] + data['answer_2'] + data['answer_3']
+            questionnaire_b.answers_sum = answers_sum
+            questionnaire_b.save()
+        else:
+            questionnaire_b.answer_1 = data['answer_1']
+            questionnaire_b.answer_2 = data['answer_2']
+            questionnaire_b.answer_3 = data['answer_3']
+            answers_sum = data['answer_1'] + data['answer_2'] + data['answer_3']
+            questionnaire_b.answers_sum = answers_sum
+            questionnaire_b.save()
+        (
+            annual_max_loss, annual_returns, annual_sharpe, annual_volatility, daily_change, monthly_change,
+            risk_level, sectors_names, sectors_weights, stocks_symbols, stocks_weights, total_change, portfolio) \
+            = web_actions.create_portfolio_and_get_data(answers_sum, stocks_collection_number, questionnaire_a)
+        try:
+            investor_user = InvestorUser.objects.get(user=request.user)
+            # If we get here, it means that the user is on UPDATE form (there is InvestorUser instance)
+            print("updateeeeeeeeeeeee")
+            investor_user.risk_level = risk_level
+            investor_user.stocks_collection_number = stocks_collection_number
+            investor_user.stocks_symbols = stocks_symbols
+            investor_user.stocks_weights = stocks_weights
+            investor_user.sectors_names = sectors_names
+            investor_user.sectors_weights = sectors_weights
+            investor_user.annual_returns = annual_returns
+            investor_user.annual_max_loss = annual_max_loss
+            investor_user.annual_volatility = annual_volatility
+            investor_user.annual_sharpe = annual_sharpe
+            investor_user.total_change = total_change
+            investor_user.monthly_change = monthly_change
+            investor_user.daily_change = daily_change
+            # how there wasn't  a save originally?
+            investor_user.save()
+            data['message'] = "Successfully Updated!"
             return JsonResponse(status=status.HTTP_201_CREATED, data=data, safe=False)
-            # return redirect('profile_portfolio')
-
-        # else:  # CREATE and UPDATE
-        #     context = {
-        #         'form': form,
-        #     }
-        #     ctx = {}
-        #     ctx.update(csrf(request))
-        #     form_html = render_crispy_form(form=context['form'], context=ctx)
-        #     return HttpResponse(form_html)
-    else:
-        raise Http404
+        except InvestorUser.DoesNotExist:
+            # If we get here, it means that the user is on CREATE form (no InvestorUser instance)
+            InvestorUser.objects.create(
+                user=request.user,
+                risk_level=risk_level,
+                total_investment_amount=0,
+                stocks_collection_number=stocks_collection_number,
+                stocks_symbols=stocks_symbols,
+                stocks_weights=stocks_weights,
+                sectors_names=sectors_names,
+                sectors_weights=sectors_weights,
+                annual_returns=annual_returns,
+                annual_max_loss=annual_max_loss,
+                annual_volatility=annual_volatility,
+                annual_sharpe=annual_sharpe,
+                total_change=total_change,
+                monthly_change=monthly_change,
+                daily_change=daily_change,
+            )
+        # Frontend
+        web_actions.save_three_user_graphs_as_png(user=request.user, portfolio=portfolio)
+        data['message'] = "Successfully Created!"
+        return JsonResponse(status=status.HTTP_201_CREATED, data=data, safe=False)
+        # return redirect('profile_portfolio')
