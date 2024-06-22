@@ -36,10 +36,29 @@ def get_specific_plot(request, type_of_graph):
         stocks_symbols, ml_answer, model_answer, stocks_collection_number)
     sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, pct_change_table, yields = db_tuple
     if type_of_graph == 1:
-        yields_dict = {}
-        for y in yields:
-            yields_dict[y.name] = y.to_dict()
-        return JsonResponse(status=status.HTTP_200_OK, data=yields_dict, safe=False)
+        labels: list[str, str, str] = ['Low Risk', 'Medium Risk', 'High Risk']
+        monthly_yields: list[pd.Series] = [None] * len(yields)  # monthly yield change
+        monthly_changes: list[pd.Series] = [None] * len(yields)  # yield changes
+        df_describes: list[pd.Series] = [None] * len(yields)  # describe of yield changes
+        for i in range(len(yields)):
+            # Convert the index to datetime if it's not already in the datetime format
+            curr_yield = yields[i]
+            if not pd.api.types.is_datetime64_any_dtype(curr_yield.index):
+                yields[i].index = pd.to_datetime(curr_yield.index)
+
+            monthly_yields[i]: pd.Series = curr_yield.resample('M').first()
+            monthly_changes[i]: pd.Series = monthly_yields[i].pct_change().dropna() * 100
+            df_describes[i]: pd.Series = monthly_changes[i].describe().drop(["count"], axis=0)
+            df_describes[i]: pd.Series = df_describes[i].rename(
+                index={'mean': 'Mean Yield', 'std': 'Standard Deviation',
+                       '50%': '50%(Median)', '25%': '25%(Q1)',
+                       '75%': '75%(Q3)', 'max': 'Max', 'min': 'Min'})
+        df_dict = {}
+        i = 0
+        for df in df_describes:
+            df_dict[labels[i]] = df.to_dict()
+            i += 1
+        return JsonResponse(status=status.HTTP_200_OK, data=df_dict, safe=False)
     elif type_of_graph == 2:
         # plot_three_portfolios_graph
         three_best_portfolios_dict = {}
@@ -68,4 +87,3 @@ def get_specific_plot(request, type_of_graph):
             'closing_prices_table_path': closing_prices_table_path
         }
         return JsonResponse(status=status.HTTP_200_OK, data=data, safe=False)
-
