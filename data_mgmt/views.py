@@ -11,6 +11,7 @@ from rest_framework import status
 from service.util.data_management import *
 from our_core.models import QuestionnaireA, QuestionnaireB
 from service.config import settings as settings_service
+from service.util.graph import helpers
 
 
 @login_required
@@ -36,7 +37,7 @@ def get_specific_plot(request, type_of_graph):
         stocks_symbols, ml_answer, model_answer, stocks_collection_number)
     sectors_data, sectors, closing_prices_table, three_best_portfolios, three_best_sectors_weights, pct_change_table, yields = db_tuple
     if type_of_graph == 1:
-        labels: list[str, str, str] = ['Low Risk', 'Medium Risk', 'High Risk']
+        labels: list[str] = ['Low Risk', 'Medium Risk', 'High Risk']
         monthly_yields: list[pd.Series] = [None] * len(yields)  # monthly yield change
         monthly_changes: list[pd.Series] = [None] * len(yields)  # yield changes
         df_describes: list[pd.Series] = [None] * len(yields)  # describe of yield changes
@@ -61,20 +62,16 @@ def get_specific_plot(request, type_of_graph):
         return JsonResponse(status=status.HTTP_200_OK, data=df_dict, safe=False)
     elif type_of_graph == 2:
         # plot_three_portfolios_graph
-        three_best_portfolios_dict = {}
-        sectors_dict = {}
-        for portfolio in three_best_portfolios:
-            three_best_portfolios_dict[int(portfolio.index[0])] = portfolio.to_dict(orient='records')
-        pct_change_table_dict = pct_change_table.to_dict(orient='records')
-        for s in sectors:
-            sectors_dict[s.name] = s.to_dict()
-        data = {
-            'three_best_portfolios': three_best_portfolios_dict,
-            'three_best_sectors_weights': three_best_sectors_weights,
-            'sectors': sectors_dict,
-            'pct_change_table': pct_change_table_dict
-        }
-        return JsonResponse(status=status.HTTP_200_OK, data=data, safe=False)
+        labels: list[str] = ['Safest', 'Sharpe', 'Max Returns']
+        colors: list[str] = ['orange', 'green', 'red']
+        max_returns_portfolio = three_best_portfolios[2]
+        sharpe_portfolio = three_best_portfolios[1]
+        min_variance_portfolio = three_best_portfolios[0]
+        portfolios_dict = helpers.ThreePortfolios.sub_plots(
+            colors, labels, max_returns_portfolio, sharpe_portfolio, min_variance_portfolio, sectors,
+            three_best_sectors_weights
+        )
+        return JsonResponse(status=status.HTTP_200_OK, data=portfolios_dict, safe=False)
     elif type_of_graph == 3:
         # plot_stat_model_graph
         closing_prices_table_path = (settings_service.BASIC_STOCK_COLLECTION_REPOSITORY_DIR

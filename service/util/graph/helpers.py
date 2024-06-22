@@ -101,10 +101,16 @@ class ThreePortfolios:
                   three_best_sectors_weights):
         plt.subplots_adjust(bottom=BOTTOM)
         stocks_y = ['', '', '']
+        stocks_dict = {}
+        portfolios_dict = {}
         for i in range(len(sectors)):
             for j in range(3):
+                if labels[j] not in stocks_dict:
+                    stocks_dict[labels[j]] = {}
+                cur = stocks_dict[labels[j]]
                 weight = three_best_sectors_weights[j][i] * 100
                 stocks_y[j] += f"{sectors[i].name} ({weight:.2f}%),\n"
+                cur[sectors[i].name] = weight
         stocks_y = [stock_y[:-2] for stock_y in stocks_y]
         with pd.option_context("display.float_format", "%{:,.2f}".format):
             fig_text_data: dict = {
@@ -125,6 +131,12 @@ class ThreePortfolios:
                     "## Weights: ##\n"
                     f"{fig_text_data['stocks'][i]}"
                 )
+                portfolios_dict[labels[i]] = {}
+                portfolios_dict[labels[i]]["Annual Returns"] = portfolio[0]
+                portfolios_dict[labels[i]]["Annual Volatility"] = portfolio[1]
+                portfolios_dict[labels[i]]["Annual Max Loss"] = portfolio[0] - 1.65 * portfolio[1]
+                portfolios_dict[labels[i]]["Annual Sharpe Ratio"] = portfolio[2]
+                portfolios_dict[labels[i]]["Weights"] = stocks_dict[labels[i]]
                 s = Spaces.add_spaces_to_each_line(s)
                 bbox: dict = {'facecolor': fig_text_data['facecolor'][i], 'alpha': 0.5}
                 plt.figtext(
@@ -135,6 +147,7 @@ class ThreePortfolios:
                     x=x, y=0.29, s=f"{fig_text_data['name'][i]} Portfolio:", fontsize=14,
                     fontweight=FONT_WEIGHT, ha=HA, va=VA, fontname=FONT_NAME, wrap=WRAP,
                 )
+        return portfolios_dict
 
 
 class Spaces:
