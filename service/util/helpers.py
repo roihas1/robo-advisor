@@ -117,19 +117,24 @@ class Analyze:
         # Added date
         df['Date'] = pd.to_datetime(self._table_index)
 
-        X = np.array(df.drop(labels=['Label', 'Date'], axis=1))
-        X = preprocessing.scale(X)
-        X_lately = X[-forecast_out:]
-        X = X[:-forecast_out]
-        df.dropna(inplace=True)
-        y = np.array(df['Label'])
+        X = np.array(df.drop(labels=['Label', 'Date'], axis=1)) # All values of df[Col] (with Nan). Label = Values after shifting 5% up
+        X = preprocessing.scale(X)    # Normalizing
+        X_lately = X[-forecast_out:]  # The last 5% of df[Col] - for example the last 180 days from 10 years
+        X = X[:-forecast_out] # The first 95% of df[Col] - for example the first X days from 10 years
+        df.dropna(inplace=True) # drop rows with NA Values -  The first 95% of df[Col, Label, Date]
+        y = np.array(df['Label'])  # The first 95% of df[Label] -  The first 95% of df[Label]
 
+        # Label is the prediction for Col - 0.05% from time period of data to predict (exp- 180 days fowards)
+        # for each day in df, the value in Col is the real value of the stock,
+        # and the value in Label is the value in X days after, due to the shift (180 days if its 10 years).
+        # X - df[Col] , y - df[Label] - both 95% of original dataframe
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=float(test_size_machine_learning)
         )
 
+
         clf = LinearRegression()
-        clf.fit(X_train, y_train)
+        clf.fit(X_train, y_train) # training model - according to "test_size_machine_learning" - X% of training set
 
         forecast = clf.predict(X_lately)
 
@@ -249,7 +254,7 @@ class Analyze:
         df['Label'] = df['Col']
         df['Label'].fillna(df['Forecast'], inplace=True)
 
-        longdouble: np.longdouble = np.longdouble(254)
+        longdouble: np.longdouble = np.longdouble(254) # trading days
 
         logged_label_mean: np.ndarray = np.log1p(df['Label'].mean())
         np_exp_res1: np.ndarray = np.exp(
@@ -309,6 +314,7 @@ def update_daily_change_with_machine_learning(returns_stock, table_index: pd.Ind
                 record_percent_to_predict=float(record_percent_to_predict),
                 is_closing_prices_mode=closing_prices_mode
             )
+
             if selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[0]:  # Linear Regression
                 df, annual_return_with_forecast, excepted_returns = \
                     analyze.linear_regression_model(test_size_machine_learning)
@@ -341,7 +347,7 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
 
     # for israeli stocks
     today = datetime.datetime.now()
-    min_start_year = today.year - 10
+    min_start_year = today.year - 9
     min_start_month = today.month
     min_start_day = today.day
     min_date: str = f"{min_start_year}-{min_start_month}-{min_start_day}"

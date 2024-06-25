@@ -1,8 +1,12 @@
 # "key and secret of yardet1998 - "robo-advisor"
+# KEY = '2075bffa96d70047e4ee5b928768e6ad'
+# SECRET = '2a38587438f8430bfaec55c20fc8979d'
+
 KEY = 'fb4577af7a020ad0e443632a102003d4'
 SECRET = '038af8b13e67a0fd0cbdbb1cdcb973c6'
 
-# key and secret of yarden - "roboadvisor-mta"
+
+# key and secret of - "roboadvisor"
 # key = "9791b4a859c4650efe0d77c2ed9d6919"
 # secret = "e8d0264a8472c411443a6dfbcdf0992f"
 

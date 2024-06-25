@@ -26,6 +26,6 @@ urlpatterns = [
     # path('profile/accounts/', views.profile_account, name='profile_account'),
     # path('profile/accounts/change/details/', views.profile_account_details, name='profile_account_details'),
     # path('profile/accounts/change/password/', views.MyPasswordChangeForm.as_view(), name='profile_account_password'),
-    #path('profile/investor/', views.profile_investor, name='profile_investor'),
+    # path('profile/investor/', views.profile_investor, name='profile_investor'),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
