@@ -29,7 +29,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
 from django.core.exceptions import BadRequest
 from users.forms import AccountMetadataForm
-from our_core.models import QuestionnaireA, QuestionnaireB
+from .serializers import CustomUserSerializer
 
 
 # @api_view(['GET', 'POST'])
@@ -172,12 +172,14 @@ class AppLoginView(LoginView):
     form_class = CustomLoginForm
 
     def get(self, request, *args, **kwargs):
-        print(django.middleware.csrf.get_token(request))
+        # print(django.middleware.csrf.get_token(request))
+        token = django.middleware.csrf.get_token(request)
         form = self.form_class()
         form_fields = {field.name: field.label for field in form}
         response_data = {
             'form': form_fields,
-            'title': "Login"
+            'title': "Login",
+            "token":token
         }
         return JsonResponse(response_data, status=200)
 
