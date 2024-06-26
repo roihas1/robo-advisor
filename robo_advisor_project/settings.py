@@ -24,12 +24,17 @@ ALLOWED_HOSTS = ['*']
 #     os.environ.get("HOST_IP", "localhost"),
 # ]
 
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
 SITE_ID: int = None
 # Application definition
 INSTALLED_APPS = [
     # Third party apps
+    'rest_framework',
     'allauth',
     'allauth.account',
+    'allauth.socialaccount',
     "crispy_bootstrap5",
     "crispy_forms",
     "debug_toolbar",
@@ -46,7 +51,6 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     # Created apps
     #'accounts',  # This is commented out
-    'core',
     'investment',
     'watchlist',
     # Log in with social network account
@@ -57,7 +61,8 @@ INSTALLED_APPS = [
     # for users app
     'users',
 
-    'rest_framework'
+    'our_core',
+    'data_mgmt'
 ]
 
 
@@ -111,7 +116,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Third party apps
-    # 'accounts.middleware.DynamicSiteIDMiddleware',
+    'accounts.middleware.DynamicSiteIDMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -149,15 +154,15 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:8000').split(" ")
 
-#Database
-#https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+# Database
+# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_DB', 'roboadvisor_db'),
+        'NAME': os.environ.get('POSTGRES_DB', 'postgres'),
         'USER': os.environ.get('POSTGRES_USER', 'postgres'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'rHas9697'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', '123456'),
         'HOST': os.environ.get('AWS_RDS_URL', 'localhost'),
         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }

@@ -24,3 +24,12 @@ class Sector:
 
     def add_stock(self, value) -> None:
         self._stocks.append(value)
+
+    def __str__(self):
+        return f"Sector(name={self.name}, weight={self.weight}, stocks={self.stocks})"
+
+    def to_dict(self):
+        return {
+            'weight': self.weight,
+            'stocks': self.stocks,
+        }
