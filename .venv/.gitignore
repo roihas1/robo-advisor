@@ -1,6 +1,6 @@
 '*.xml'
 '*.pyc'
 # Ignore virtual environment
-venv/
+.venv/
 #
 __pycache__/
