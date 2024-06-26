@@ -14,7 +14,8 @@ urlpatterns = [
     path("check/last_name/", views.check_last_name, name='check_last_name'),
     path("check/phone_number/", views.check_phone_number, name='check_phone_number'),
     path("validate/password/", views.check_password_confirmation, name='check_password_confirmation'),
-    path('login/', views.AppLoginView.as_view(), name='users_login'),
+    path('login/', views.AppLoginView.as_view(), name='user_login'),
+    path('login/check/',views.login_view,name="login"),
     path('login/email/check/', views.check_login_email, name='check_login_email_view'),
     path('login/custom_login_system/', views.custom_login_system, name='check_login_email_view'),
 
