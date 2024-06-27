@@ -4,6 +4,7 @@ import datetime
 from datetime import datetime as data_time, timedelta
 import json
 import math
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 import numpy as np
 import pandas as pd
@@ -116,7 +117,8 @@ class Analyze:
 
         # Added date
         df['Date'] = pd.to_datetime(self._table_index)
-
+        df_lately = df[-forecast_out:]
+        df_lately = df_lately['Col']
         X = np.array(df.drop(labels=['Label', 'Date'], axis=1)) # All values of df[Col] (with Nan). Label = Values after shifting 5% up
         X = preprocessing.scale(X)    # Normalizing
         X_lately = X[-forecast_out:]  # The last 5% of df[Col] - for example the last 180 days from 10 years
@@ -132,9 +134,25 @@ class Analyze:
             X, y, test_size=float(test_size_machine_learning)
         )
 
-
         clf = LinearRegression()
         clf.fit(X_train, y_train) # training model - according to "test_size_machine_learning" - X% of training set
+
+        #################
+        # Make predictions for the test set
+        y_pred_test = clf.predict(X_test)
+
+        # Calculate evaluation metrics for the test set
+        mae = mean_absolute_error(y_test, y_pred_test)
+        mse = mean_squared_error(y_test, y_pred_test)
+        rmse = np.sqrt(mse)
+        r2 = r2_score(y_test, y_pred_test)
+        evaluation_metrics = {
+            'MAE': mae,
+            'MSE': mse,
+            'RMSE': rmse,
+            'R2': r2
+        }
+        #################
 
         forecast = clf.predict(X_lately)
 
@@ -144,6 +162,8 @@ class Analyze:
 
         # Combine the original DataFrame and the forecast DataFrame
         combined_df = pd.concat([df, forecast_df])
+
+
 
         forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(combined_df)
         return combined_df, forecast_with_historical_returns_annual, expected_returns

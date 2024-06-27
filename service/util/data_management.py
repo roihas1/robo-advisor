@@ -85,6 +85,7 @@ def update_dataframe_tables(collection_json_data, path,
         # Without machine learning - Markowitz, Gini, With machine learning - Markowitz, Gini
         options_list: list[tuple[int, str]] = [(0, 'Markowitz'), (0, 'Gini'), (1, 'Markowitz'), (1, 'Gini')]
         for i, machine_model_tuple in enumerate(options_list):
+            i=2
             if i == 2:  # change pct_change_table due to machine learning
                 pct_change_table, annual_return, excepted_returns = helpers.update_daily_change_with_machine_learning(
                     pct_change_table, closing_prices_table.index, models_data
