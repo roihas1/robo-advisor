@@ -8,6 +8,14 @@ load_dotenv()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+BASE_SERVICE_DIR = os.path.join(BASE_DIR, 'service')
+DATASET_LOCATION = 'dataset'
+MACHINE_LEARNING_LOCATION = 'includingMachineLearning'
+NON_MACHINE_LEARNING_LOCATION = 'withoutMachineLearning'
+CLOSING_PRICES_FILE_NAME = 'closing_prices.csv'
+PCT_CHANGE_FILE_NAME = 'pct_change.csv'
+UPLOAD_TO_POSTGRES = True
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
