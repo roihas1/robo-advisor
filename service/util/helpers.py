@@ -4,7 +4,7 @@ import datetime
 from datetime import datetime as data_time, timedelta
 import json
 import math
-
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import numpy as np
 import pandas as pd
 import yfinance as yf
@@ -116,20 +116,43 @@ class Analyze:
 
         # Added date
         df['Date'] = pd.to_datetime(self._table_index)
+        df_lately = df[-forecast_out:]
+        df_lately = df_lately['Col']
+        X = np.array(df.drop(labels=['Label', 'Date'],
+                             axis=1))  # All values of df[Col] (with Nan). Label = Values after shifting 5% up
+        X = preprocessing.scale(X)  # Normalizing
+        X_lately = X[-forecast_out:]  # The last 5% of df[Col] - for example the last 180 days from 10 years
+        X = X[:-forecast_out]  # The first 95% of df[Col] - for example the first X days from 10 years
+        df.dropna(inplace=True)  # drop rows with NA Values -  The first 95% of df[Col, Label, Date]
+        y = np.array(df['Label'])  # The first 95% of df[Label] -  The first 95% of df[Label]
 
-        X = np.array(df.drop(labels=['Label', 'Date'], axis=1))
-        X = preprocessing.scale(X)
-        X_lately = X[-forecast_out:]
-        X = X[:-forecast_out]
-        df.dropna(inplace=True)
-        y = np.array(df['Label'])
-
+        # Label is the prediction for Col - 0.05% from time period of data to predict (exp- 180 days fowards)
+        # for each day in df, the value in Col is the real value of the stock,
+        # and the value in Label is the value in X days after, due to the shift (180 days if its 10 years).
+        # X - df[Col] , y - df[Label] - both 95% of original dataframe
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=float(test_size_machine_learning)
         )
 
         clf = LinearRegression()
-        clf.fit(X_train, y_train)
+        clf.fit(X_train, y_train)  # training model - according to "test_size_machine_learning" - X% of training set
+
+        ################# prediction success rates
+        # Make predictions for the test set
+        y_pred_test = clf.predict(X_test)
+
+        # Calculate evaluation metrics for the test set
+        mae = mean_absolute_error(y_test, y_pred_test)
+        mse = mean_squared_error(y_test, y_pred_test)
+        rmse = np.sqrt(mse)
+        r2 = r2_score(y_test, y_pred_test)
+        evaluation_metrics = {
+            'MAE': mae,
+            'MSE': mse,
+            'RMSE': rmse,
+            'R2': r2
+        }
+        #################
 
         forecast = clf.predict(X_lately)
 
