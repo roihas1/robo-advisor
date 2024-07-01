@@ -13,6 +13,7 @@ from our_core.models import QuestionnaireA, QuestionnaireB
 from service.config import settings as settings_service
 from service.util.graph import helpers
 from service.util import helpers as helpers2
+from service.util import data_management
 
 @login_required
 @api_view(["GET"])
@@ -97,3 +98,14 @@ def get_specific_plot(request, type_of_graph):
             'closing_prices_table_path': closing_prices_table_path
         }
         return JsonResponse(status=status.HTTP_200_OK, data=data, safe=False)
+
+
+@login_required
+@api_view(["PUT"])
+def update_all_tables(request):
+    try:
+        data_management.update_all_tables()
+    except Exception as e:
+        string = "Exception occured: " + str(e)
+        return JsonResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data=string, safe=False)
+    return JsonResponse(status=status.HTTP_200_OK, data="Updated all tables!", safe=False)
