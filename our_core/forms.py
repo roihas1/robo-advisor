@@ -194,6 +194,7 @@ class InvestmentPreferencesForm(forms.ModelForm):
         plt.clf()
         plt.cla()
         plt.close()
+        return three_best_portfolios
 
     class Meta:
         model = QuestionnaireB

@@ -9,7 +9,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
-    path('watchlist/', include('watchlist.urls')),
+    # path('watchlist/', include('watchlist.urls')),
     # More URLs modules
     # path('accounts/', include('accounts.urls')),
     # path('accounts/', include('allauth.urls')),
@@ -17,7 +17,7 @@ urlpatterns = [
     path('data_mgmt/', include('data_mgmt.urls')),
     path('users/', include('users.urls')),
     path('', include('investment.urls')),
-    path('', include('watchlist.urls')),
+    # path('', include('watchlist.urls')),
     # Third party apps
     path('__debug__', include(debug_toolbar.urls)),
 
