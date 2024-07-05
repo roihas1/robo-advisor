@@ -168,9 +168,9 @@ CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://0.0.0.0:80
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_DB', 'postgres'),
-        'USER': os.environ.get('POSTGRES_USER', 'postgres'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', '123456'),
+        'NAME': os.environ.get('POSTGRES_DB', 'roboadvisor_db'),
+        'USER': os.environ.get('POSTGRES_USER', 'roboadvisor'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'Aa123456'),
         'HOST': os.environ.get('AWS_RDS_URL', 'localhost'),
         'PORT': int(os.environ.get('POSTGRES_PORT', 5432)),
     }
