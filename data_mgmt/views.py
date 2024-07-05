@@ -12,7 +12,8 @@ from service.util.data_management import *
 from our_core.models import QuestionnaireA, QuestionnaireB
 from service.config import settings as settings_service
 from service.util.graph import helpers
-
+from service.util import helpers as helpers2
+from service.util import data_management
 
 @login_required
 @api_view(["GET"])
@@ -71,6 +72,19 @@ def get_specific_plot(request, type_of_graph):
             colors, labels, max_returns_portfolio, sharpe_portfolio, min_variance_portfolio, sectors,
             three_best_sectors_weights
         )
+        i = 0
+        all_stocks = helpers2.get_all_stocks_table()
+        for stock_list in three_best_portfolios:
+            my_dict = stock_list.to_dict()
+            final_dict = {}
+            for key, value in my_dict.items():
+                if 'Weight' in key:
+                    stock = key.split()[0]
+                    name = all_stocks.loc[all_stocks['Symbol'] == stock, 'description'].iloc[0]
+                    value_f = next(iter(value.values()))
+                    final_dict[name + " - " + key] = value_f
+            portfolios_dict[labels[i]]['stocks'] = final_dict
+            i += 1
         return JsonResponse(status=status.HTTP_200_OK, data=portfolios_dict, safe=False)
     elif type_of_graph == 3:
         # plot_stat_model_graph
@@ -84,3 +98,14 @@ def get_specific_plot(request, type_of_graph):
             'closing_prices_table_path': closing_prices_table_path
         }
         return JsonResponse(status=status.HTTP_200_OK, data=data, safe=False)
+
+
+@login_required
+@api_view(["PUT"])
+def update_all_tables(request):
+    try:
+        data_management.update_all_tables()
+    except Exception as e:
+        string = "Exception occured: " + str(e)
+        return JsonResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR, data=string, safe=False)
+    return JsonResponse(status=status.HTTP_200_OK, data="Updated all tables!", safe=False)
