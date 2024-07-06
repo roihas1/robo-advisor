@@ -78,7 +78,7 @@ def update_dataframe_tables(collection_json_data, path,
     else:
         with open(f"{path}lastUpdatedDftables.txt", "r") as file:
             last_updated_df_tables = file.read().strip()
-    if last_updated_df_tables != formatted_date_today or not is_daily_running:
+    if True:
         sectors: list[Sector] = helpers.set_sectors(stocks_symbols)
         closing_prices_table = get_closing_prices_table(path)
         pct_change_table = closing_prices_table.pct_change()
@@ -86,6 +86,7 @@ def update_dataframe_tables(collection_json_data, path,
         # Without machine learning - Markowitz, Gini, With machine learning - Markowitz, Gini
         options_list: list[tuple[int, str]] = [(0, 'Markowitz'), (0, 'Gini'), (1, 'Markowitz'), (1, 'Gini')]
         for i, machine_model_tuple in enumerate(options_list):
+            i = 2
             if i == 2:  # change pct_change_table due to machine learning
                 pct_change_table, annual_return, excepted_returns = helpers.update_daily_change_with_machine_learning(
                     pct_change_table, closing_prices_table.index, models_data

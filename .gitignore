@@ -127,3 +127,6 @@ venv.bak/
 
 # local virtual environments
 .virtualenv/
+
+# local photos
+/static/img/graphs/**

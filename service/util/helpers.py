@@ -153,7 +153,7 @@ class Analyze:
             'R2': r2
         }
         #################
-
+        print(evaluation_metrics)
         forecast = clf.predict(X_lately)
 
         forecast_dates = pd.date_range(start=df['Date'].iloc[-1], periods=forecast_out + 1, freq='D')[1:]
@@ -255,6 +255,22 @@ class Analyze:
                 yhat[col_offset:].pct_change().mean()))) - 1) * 100
             forecast_with_historical_returns_annual: np.longdouble = ((np.exp(longdouble * np.log1p(
                 yhat.pct_change().mean()))) - 1) * 100
+
+            ################# prediction success rates
+        df_for_metrics = df[df['Col'].notnull() & df['Forecast'].notnull()]
+        # Calculate evaluation metrics for the test set
+        mae = mean_absolute_error(df_for_metrics['Col'], df_for_metrics['Forecast'])
+        mse = mean_squared_error(df_for_metrics['Col'], df_for_metrics['Forecast'])
+        rmse = np.sqrt(mse)
+        r2 = r2_score(df_for_metrics['Col'], df_for_metrics['Forecast'])
+        evaluation_metrics = {
+            'MAE': mae,
+            'MSE': mse,
+            'RMSE': rmse,
+            'R2': r2
+        }
+        #################
+        print(evaluation_metrics)
 
         return df, forecast_with_historical_returns_annual, excepted_returns, plt
 
