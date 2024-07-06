@@ -172,10 +172,11 @@ class Analyze:
         # Make predictions for the test set
         y_pred_test = clf.predict(X_test)
         # Calculate evaluation metrics for the test set
-        mae = mean_absolute_error(y_test, y_pred_test)
-        mse = mean_squared_error(y_test, y_pred_test)
-        rmse = np.sqrt(mse)
-        r2 = r2_score(y_test, y_pred_test)
+        mae, mse, rmse, r2 = self.evaluation_metrics_of_ml_model(y_test, y_pred_test)
+        # mae = mean_absolute_error(y_test, y_pred_test)
+        # mse = mean_squared_error(y_test, y_pred_test)
+        # rmse = np.sqrt(mse)
+        # r2 = r2_score(y_test, y_pred_test)
         evaluation_metrics = {
             'Model': "linear_regression_model",
             "test_size_machine_learning": test_size_machine_learning,
@@ -212,12 +213,13 @@ class Analyze:
         file_path = os.path.join(desired_directory, 'evaluation_metrics.csv')
 
         if not final_Round:
-            file_path = 'evaluation_metrics.csv'
-            if not os.path.isfile(file_path):
-                evaluation_metrics_df.to_csv(file_path, index=False)
-            else:
-                evaluation_metrics_df.to_csv(file_path, mode='a', header=False, index=False)
-            # **Evaluation Metrics CSV - End**
+            self.evaluation_metrics_of_ml_model(evaluation_metrics_df)
+            # file_path = 'evaluation_metrics.csv'
+            # if not os.path.isfile(file_path):
+            #     evaluation_metrics_df.to_csv(file_path, index=False)
+            # else:
+            #     evaluation_metrics_df.to_csv(file_path, mode='a', header=False, index=False)
+            # # **Evaluation Metrics CSV - End**
 
         return combined_df, forecast_with_historical_returns_annual, expected_returns
 
@@ -314,6 +316,22 @@ class Analyze:
 
         return df, forecast_with_historical_returns_annual, excepted_returns, plt
 
+    def evaluation_metrics_of_ml_model_to_CSV(self,evaluation_metrics_df):
+        file_path = 'evaluation_metrics.csv'
+        if not os.path.isfile(file_path):
+            evaluation_metrics_df.to_csv(file_path, index=False)
+        else:
+            evaluation_metrics_df.to_csv(file_path, mode='a', header=False, index=False)
+        # **Evaluation Metrics CSV - End**
+
+    def evaluation_metrics_of_ml_model(self,y_test, y_pred_test):
+        # Calculate evaluation metrics for the test set
+        mae = mean_absolute_error(y_test, y_pred_test)
+        mse = mean_squared_error(y_test, y_pred_test)
+        rmse = np.sqrt(mse)
+        r2 = r2_score(y_test, y_pred_test)
+        return mae, mse, rmse, r2
+
     def add_synthetic_duplicate_rows(self, df, times: int = 2) -> pd.DataFrame:
         new_rows = []
         for _, row in df.iterrows():
@@ -329,7 +347,7 @@ class Analyze:
         new_df = new_df.sort_values(by='Date').reset_index(drop=True)  # Sort by 'Date' and reset index
         return new_df
 
-    def add_synthetic_data(self, df, number_of_average_iterations=1):
+    def add_synthetic_data_Average_rows(self, df, number_of_average_iterations=1):
         for j in range(number_of_average_iterations):
             new_data = []
             for i in range(len(df) - 1):
@@ -349,7 +367,7 @@ class Analyze:
         df.fillna(value=-0, inplace=True)
         df['Date'] = pd.to_datetime(self._table_index)
         if number_of_average_iterations:
-            df = self.add_synthetic_data(df, number_of_average_iterations)
+            df = self.add_synthetic_data_Average_rows(df, number_of_average_iterations)
         if number_of_duplicate_iterations > 1:
             df = self.add_synthetic_duplicate_rows(df, number_of_duplicate_iterations)
         forecast_out = int(math.ceil(self._record_percent_to_predict * len(df)))
