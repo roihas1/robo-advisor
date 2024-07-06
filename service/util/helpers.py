@@ -1,3 +1,4 @@
+import os
 import codecs
 import csv
 import datetime
@@ -112,10 +113,40 @@ class Analyze:
     def linear_regression_model(
             self, test_size_machine_learning: str
     ) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
-        df, forecast_out = self.get_final_dataframe()
+        final_Round = True
 
-        # Added date
-        df['Date'] = pd.to_datetime(self._table_index)
+        # # Synthetic data Checking each combination of synthetic data/duplicated data
+        # final_Round = False
+        # for i in range(2):
+        #     for j in range(1, 5):
+        #         add_synthetic_average_data_boolean = False
+        #         add_synthetic_doubled_data_boolean = j
+        #         if i == 1:
+        #             add_synthetic_average_data_boolean = True
+        #         df, forecast_out = self.get_final_dataframe_synthetic_data(add_synthetic_average_data_boolean,add_synthetic_doubled_data_boolean)                # Added date
+        #
+        #         if add_synthetic_average_data_boolean and add_synthetic_doubled_data_boolean == 4:
+        #             final_Round = True
+        #             add_synthetic_average_data_boolean = False
+        #             add_synthetic_doubled_data_boolean = 1
+        #             df, forecast_out = self.get_final_dataframe()  # Added date
+
+        # Synthetic data - Added only Averaging  in iterations
+        # final_Round = False
+        # for i in range(2):
+        #     if i == 1:
+        #         add_synthetic_average_data_boolean = False
+        #         df, forecast_out = self.get_final_dataframe()  # Added date
+        #     else:
+        #         add_synthetic_average_data_boolean = True
+        #         df, forecast_out = self.get_final_dataframe_synthetic_data(3,1)                # Added date
+        #
+
+        # implementation after synthetic data -
+        df, forecast_out = self.get_final_dataframe()  # turn to note if using added synthetic data
+
+        if 'Date' not in df.columns:
+            df['Date'] = pd.to_datetime(self._table_index)
         df_lately = df[-forecast_out:]
         df_lately = df_lately['Col']
         X = np.array(df.drop(labels=['Label', 'Date'],
@@ -140,17 +171,22 @@ class Analyze:
         ################# prediction success rates
         # Make predictions for the test set
         y_pred_test = clf.predict(X_test)
-
         # Calculate evaluation metrics for the test set
         mae = mean_absolute_error(y_test, y_pred_test)
         mse = mean_squared_error(y_test, y_pred_test)
         rmse = np.sqrt(mse)
         r2 = r2_score(y_test, y_pred_test)
         evaluation_metrics = {
+            'Model': "linear_regression_model",
+            "test_size_machine_learning": test_size_machine_learning,
+            'self._returns_stock': self._returns_stock,
+            # 'add_synthetic_average_data_boolean': add_synthetic_average_data_boolean,
+            # 'add_synthetic_doubled_data_boolean': add_synthetic_doubled_data_boolean,
             'MAE': mae,
             'MSE': mse,
             'RMSE': rmse,
-            'R2': r2
+            'R2': r2,
+            'Sum_evaluation_metrics': mae+mse+rmse
         }
         #################
         print(evaluation_metrics)
@@ -163,8 +199,28 @@ class Analyze:
         # Combine the original DataFrame and the forecast DataFrame
         combined_df = pd.concat([df, forecast_df])
 
-        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(combined_df)
+        #forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(combined_df)
+        forecast_with_historical_returns_annual, expected_returns = 1, 1
+
+        # **Evaluation Metrics CSV - Start**
+        evaluation_metrics['Number of Rows'] = combined_df.shape[0]
+        evaluation_metrics_df = pd.DataFrame([evaluation_metrics])
+
+        desired_directory = os.getcwd()
+        os.chdir(desired_directory)
+        # Specify file path for evaluation_metrics.csv in the desired directory
+        file_path = os.path.join(desired_directory, 'evaluation_metrics.csv')
+
+        if not final_Round:
+            file_path = 'evaluation_metrics.csv'
+            if not os.path.isfile(file_path):
+                evaluation_metrics_df.to_csv(file_path, index=False)
+            else:
+                evaluation_metrics_df.to_csv(file_path, mode='a', header=False, index=False)
+            # **Evaluation Metrics CSV - End**
+
         return combined_df, forecast_with_historical_returns_annual, expected_returns
+
 
     def arima_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
         df, forecast_out = self.get_final_dataframe()
@@ -274,6 +330,48 @@ class Analyze:
 
         return df, forecast_with_historical_returns_annual, excepted_returns, plt
 
+    def add_synthetic_duplicate_rows(self, df, times: int = 2) -> pd.DataFrame:
+        new_rows = []
+        for _, row in df.iterrows():
+            base_date = row['Date']
+            base_value = row['Col']  # Replace 'Col' with your actual column name
+
+            for i in range(times):
+                if i > 0:
+                    base_date += timedelta(minutes=1)  # Add 1 minute for each subsequent row
+                new_rows.append({'Date': base_date, 'Col': base_value})  # Replace 'Col' with your actual column name
+
+        new_df = pd.DataFrame(new_rows)
+        new_df = new_df.sort_values(by='Date').reset_index(drop=True)  # Sort by 'Date' and reset index
+        return new_df
+
+    def add_synthetic_data(self, df, number_of_average_iterations=1):
+        for j in range(number_of_average_iterations):
+            new_data = []
+            for i in range(len(df) - 1):
+                date1 = df.iloc[i]['Date']
+                date2 = df.iloc[i + 1]['Date']
+                average_date = pd.Timestamp((date1.timestamp() + date2.timestamp()) / 2, unit='s')
+                average_col = (df.iloc[i]['Col'] + df.iloc[i + 1]['Col']) / 2  # Use 'Col' instead of 'Value'
+                # average_Label = (df.iloc[i]['Label'] + df.iloc[i + 1]['Label']) / 2  # Use 'Col' instead of 'Value'
+                new_data.append({'Date': average_date, 'Col': average_col})
+            new_df = pd.DataFrame(new_data)
+            df = pd.concat([df, new_df]).sort_values(by='Date').reset_index(drop=True)  # Ensure sorting by 'Date'
+        return df
+
+    def get_final_dataframe_synthetic_data(self, number_of_average_iterations, number_of_duplicate_iterations) -> tuple[pd.DataFrame, int]:
+        df: pd.DataFrame = pd.DataFrame({})
+        df['Col'] = self._returns_stock
+        df.fillna(value=-0, inplace=True)
+        df['Date'] = pd.to_datetime(self._table_index)
+        if number_of_average_iterations:
+            df = self.add_synthetic_data(df, number_of_average_iterations)
+        if number_of_duplicate_iterations > 1:
+            df = self.add_synthetic_duplicate_rows(df, number_of_duplicate_iterations)
+        forecast_out = int(math.ceil(self._record_percent_to_predict * len(df)))
+        df['Label'] = df['Col'].shift(-forecast_out)
+        return df, forecast_out
+
     def get_final_dataframe(self) -> tuple[pd.DataFrame, int]:
         df: pd.DataFrame = pd.DataFrame({})
         df['Col'] = self._returns_stock
@@ -380,7 +478,7 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
 
     # for israeli stocks
     today = datetime.datetime.now()
-    min_start_year = today.year - 10
+    min_start_year = today.year - 20
     min_start_month = today.month
     min_start_day = today.day
     min_date: str = f"{min_start_year}-{min_start_month}-{min_start_day}"
