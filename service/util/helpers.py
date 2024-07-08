@@ -131,7 +131,7 @@ class Analyze:
         #             add_synthetic_doubled_data_boolean = 1
         #             df, forecast_out = self.get_final_dataframe()  # Added date
 
-        # Synthetic data - Added only Averaging  in iterations
+        # Synthetic data - Added only Averaging in iterations
         # final_Round = False
         # for i in range(2):
         #     if i == 1:
@@ -213,13 +213,7 @@ class Analyze:
         file_path = os.path.join(desired_directory, 'evaluation_metrics.csv')
 
         if not final_Round:
-            self.evaluation_metrics_of_ml_model(evaluation_metrics_df)
-            # file_path = 'evaluation_metrics.csv'
-            # if not os.path.isfile(file_path):
-            #     evaluation_metrics_df.to_csv(file_path, index=False)
-            # else:
-            #     evaluation_metrics_df.to_csv(file_path, mode='a', header=False, index=False)
-            # # **Evaluation Metrics CSV - End**
+            self.evaluation_metrics_of_ml_model_to_CSV(evaluation_metrics_df)
 
         return combined_df, forecast_with_historical_returns_annual, expected_returns
 
@@ -259,61 +253,85 @@ class Analyze:
         return df, forecast_with_historical_returns_annual, expected_returns
 
     def prophet_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble, plt]:
+        final_Round = False
         df, forecast_out = self.get_final_dataframe()
-        df.index = pd.to_datetime(self._table_index)
+        for i in range(2):
+            if i == 1:
+                final_Round = True
+                df, forecast_out = self.get_final_dataframe()  # Added date
+            else:
+                for number_of_averaging in range(4):
+                    df, forecast_out = self.get_final_dataframe_synthetic_data(number_of_averaging, 1)                # Added date
+                    # df.index = pd.to_datetime(self._table_index)
+                    df.index = pd.to_datetime(df.index)
 
-        # Prepare the data for Prophet
-        df_prophet: pd.DataFrame = pd.DataFrame({'ds': self._table_index, 'y': df['Col']})
+                    # Prepare the data for Prophet
+                    df_prophet: pd.DataFrame = pd.DataFrame({'ds': df.index, 'y': df['Col']})
 
-        # Create and fit the Prophet model
-        model: Prophet = Prophet()
-        model.fit(df_prophet)
+                    # Create and fit the Prophet model
+                    model: Prophet = Prophet()
+                    model.fit(df_prophet)
 
-        # Generate future dates for forecasting
-        future: pd.DataFrame = model.make_future_dataframe(periods=forecast_out, freq='D')
+                    # Generate future dates for forecasting
+                    future: pd.DataFrame = model.make_future_dataframe(periods=forecast_out, freq='D')
 
-        # Perform the forecast
-        forecast: pd.DataFrame = model.predict(future)
+                    # Perform the forecast
+                    forecast: pd.DataFrame = model.predict(future)
 
-        # Extract the forecasted values for future dates
-        forecast_for_future: pd.Series = forecast[forecast['ds'].isin(self._table_index[-forecast_out:])]['yhat']
+                    # Extract the forecasted values for future dates
+                    forecast_for_future: pd.Series = forecast[forecast['ds'].isin(df.index[-forecast_out:])]['yhat']
 
-        # Assign the forecasted values to the 'Forecast' column for future dates
-        df.loc[self._table_index[-forecast_out:], 'Forecast'] = forecast_for_future.values
+                    # Assign the forecasted values to the 'Forecast' column for future dates
+                    df.loc[df.index[-forecast_out:], 'Forecast'] = forecast_for_future.values
 
-        # add dates
-        last_date: pd.Timestamp = df.iloc[-1].name
-        try:
-            last_unix = last_date.timestamp()
-        except AttributeError:
-            # convert str to datetime
-            last_date: datetime.datetime = datetime.datetime.strptime(last_date, '%Y-%m-%d')
-            last_unix: float = last_date.timestamp()
+                    # add dates
+                    last_date: pd.Timestamp = df.iloc[-1].name
+                    try:
+                        last_unix = last_date.timestamp()
+                    except AttributeError:
+                        # convert str to datetime
+                        last_date: datetime.datetime = datetime.datetime.strptime(last_date, '%Y-%m-%d')
+                        last_unix: float = last_date.timestamp()
 
-        next_unix: float = last_unix + SINGLE_DAY
-        for i in forecast_for_future:
-            next_date: datetime.datetime = datetime.datetime.fromtimestamp(next_unix)
-            next_unix += SINGLE_DAY
-            df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
+                    next_unix: float = last_unix + SINGLE_DAY
+                    for i in forecast_for_future:
+                        next_date: datetime.datetime = datetime.datetime.fromtimestamp(next_unix)
+                        next_unix += SINGLE_DAY
+                        df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-        col_offset: int = len(df) - forecast_out
-        yhat: pd.Series = forecast['yhat']
-        df['Label'] = yhat.values
-        df['Forecast'][col_offset:] = yhat[col_offset:]
+                    col_offset: int = len(df) - forecast_out
+                    yhat: pd.Series = forecast['yhat']
+                    df['Label'] = yhat.values
+                    df['Forecast'][col_offset:] = yhat[col_offset:]
 
-        longdouble: np.longdouble = np.longdouble(254)
-        excepted_returns: np.longdouble = ((np.exp(longdouble * np.log1p(yhat[col_offset:].mean()))) - 1) * 100
-        forecast_with_historical_returns_annual: np.longdouble = ((np.exp(
-            longdouble * np.log1p(yhat.mean()))) - 1) * 100
-        if self._is_closing_prices_mode:
-            # Plot the forecast
-            model.plot(forecast, xlabel='Date', ylabel='Stock Price', figsize=(12, 6))
-            plt.title('Stock Price Forecast using Prophet')
-            excepted_returns: np.longdouble = ((np.exp(longdouble * np.log1p(
-                yhat[col_offset:].pct_change().mean()))) - 1) * 100
-            forecast_with_historical_returns_annual: np.longdouble = ((np.exp(longdouble * np.log1p(
-                yhat.pct_change().mean()))) - 1) * 100
+                    longdouble: np.longdouble = np.longdouble(254)
+                    excepted_returns: np.longdouble = ((np.exp(longdouble * np.log1p(yhat[col_offset:].mean()))) - 1) * 100
+                    forecast_with_historical_returns_annual: np.longdouble = ((np.exp(
+                        longdouble * np.log1p(yhat.mean()))) - 1) * 100
+                    if self._is_closing_prices_mode:
+                        # Plot the forecast
+                        model.plot(forecast, xlabel='Date', ylabel='Stock Price', figsize=(12, 6))
+                        plt.title('Stock Price Forecast using Prophet')
+                        excepted_returns: np.longdouble = ((np.exp(longdouble * np.log1p(
+                            yhat[col_offset:].pct_change().mean()))) - 1) * 100
+                        forecast_with_historical_returns_annual: np.longdouble = ((np.exp(longdouble * np.log1p(
+                            yhat.pct_change().mean()))) - 1) * 100
 
+                    df_for_metrics = df[df['Col'].notnull() & df['Forecast'].notnull()]
+                    mae, mse, rmse, r2 = self.evaluation_metrics_of_ml_model(df_for_metrics['Col'], df_for_metrics['Forecast'])
+                    evaluation_metrics = {
+                        'Model': "prophet_model",
+                        'Number of Rows': df_prophet.shape[0],
+                        'Stock': self._returns_stock.name,
+                        'MAE': mae,
+                        'MSE': mse,
+                        'RMSE': rmse,
+                        'R2': r2,
+                        'Sum_evaluation_metrics': mae+mse+rmse
+                    }
+                    evaluation_metrics_df = pd.DataFrame([evaluation_metrics])
+                    if not final_Round:
+                        self.evaluation_metrics_of_ml_model_to_CSV(evaluation_metrics_df)
         return df, forecast_with_historical_returns_annual, excepted_returns, plt
 
     def evaluation_metrics_of_ml_model_to_CSV(self,evaluation_metrics_df):
@@ -457,6 +475,7 @@ def update_daily_change_with_machine_learning(returns_stock, table_index: pd.Ind
                 df, annual_return_with_forecast, excepted_returns = analyze.lstm_model()
             elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[3]:  # Prophet
                 df, annual_return_with_forecast, excepted_returns, plt = analyze.prophet_model()
+                print(i)
             else:
                 raise ValueError('Invalid machine model')
             if df['Label'][offset_row:].values.size == returns_stock[stock_name].size:
@@ -480,7 +499,7 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
 
     # for israeli stocks
     today = datetime.datetime.now()
-    min_start_year = today.year - 20
+    min_start_year = today.year - 10
     min_start_month = today.month
     min_start_day = today.day
     min_date: str = f"{min_start_year}-{min_start_month}-{min_start_day}"
@@ -489,6 +508,7 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
     yf.pdr_override()  # Override the default settings for data retrieval
     if start_date is None or end_date is None:
         start_date, end_date = get_from_and_to_dates(num_of_years_history)
+        us_start_date, us_end_date = get_from_and_to_dates(num_of_years_history)
     file_url: str = f'{location_saving}{file_name}.csv'
 
     for i, stock in enumerate(stocks_names):
@@ -523,7 +543,7 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
                 frame[stocks_names[i]] = price
         else:  # US stock
             try:
-                df: pd.DataFrame = yf.download(stock, start=start_date, end=end_date)
+                df: pd.DataFrame = yf.download(stock, start=us_start_date, end=us_end_date)
             except ValueError:
                 print('Invalid start_date or end_date format, should be %Y-%m-%d')
                 continue
