@@ -28,6 +28,7 @@ from service.util import draw_table
 # from accounts.models import InvestorUser
 from users.models import InvestorUser
 from service.impl import google_drive
+from service.util.helpers import *
 
 google_drive_instance = google_drive.GoogleDriveInstance()
 today = datetime.date.today()
@@ -35,6 +36,51 @@ formatted_date_today = today.strftime("%Y-%m-%d")
 
 
 ######################################################################################
+def evaluate_all_models():
+    models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()
+    for collection in range(1,2): # len(models_data)):
+        curr_collection = models_data[str(collection)][0]
+        stocks_symbols = curr_collection['stocksSymbols']
+        path = f'{settings.BASIC_STOCK_COLLECTION_REPOSITORY_DIR}{str(collection)}/'
+        closing_prices_table = get_closing_prices_table(path)
+        pct_change_table = closing_prices_table.pct_change()
+        offset_row, record_percent_to_predict = helpers.get_daily_change_sub_table_offset(models_data, closing_prices_table.index)
+
+        is_ndarray_mode = False
+        try:
+            columns = pct_change_table.columns
+        except AttributeError:
+            columns = pct_change_table
+            is_ndarray_mode = True
+        if len(columns) == 0:
+            raise AttributeError('columns length is invalid - 0. Should be at least 1')
+        else:
+            excepted_returns = None
+            annual_return_with_forecast = None
+
+
+        for stock in stocks_symbols:
+            if is_ndarray_mode:
+                stock_name = 0
+            else:
+                stock_name = str(stock)
+
+
+            analyze: Analyze = Analyze(
+                returns_stock=pct_change_table[stock_name],
+                table_index=pct_change_table.index,
+                record_percent_to_predict=record_percent_to_predict,
+                is_closing_prices_mode=False
+            )
+
+            for i in range(0, 1): # rows duplications
+                for j in range(0, 2):  # average duplications
+                    df, forcast_out = analyze.get_final_dataframe_synthetic_data(j, i)
+                    # analyze.linear_regression_model(0.1, df=df, evaluate_model=True)
+                    # analyze.arima_model(df=df, evaluate_model=True)
+                    analyze.prophet_model(df=df, evaluate_model=True)
+
+
 # update dataset tables
 def update_all_tables(is_daily_running: bool = True):  # build DB for withdraw
     models_data: dict[dict, list, list, list, list] = helpers.get_collection_json_data()

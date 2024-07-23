@@ -111,46 +111,21 @@ class Analyze:
         self._is_closing_prices_mode: bool = is_closing_prices_mode
 
     def linear_regression_model(
-            self, test_size_machine_learning: str
+            self, test_size_machine_learning: str, evaluate_model=False, df=None
     ) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
-        final_Round = True
 
-        # # Synthetic data Checking each combination of synthetic data/duplicated data
-        # final_Round = False
-        # for i in range(2):
-        #     for j in range(1, 5):
-        #         add_synthetic_average_data_boolean = False
-        #         add_synthetic_doubled_data_boolean = j
-        #         if i == 1:
-        #             add_synthetic_average_data_boolean = True
-        #         df, forecast_out = self.get_final_dataframe_synthetic_data(add_synthetic_average_data_boolean,add_synthetic_doubled_data_boolean)                # Added date
-        #
-        #         if add_synthetic_average_data_boolean and add_synthetic_doubled_data_boolean == 4:
-        #             final_Round = True
-        #             add_synthetic_average_data_boolean = False
-        #             add_synthetic_doubled_data_boolean = 1
-        #             df, forecast_out = self.get_final_dataframe()  # Added date
+        # df will not be None in case of evaluation ml models
+        if df is None:
+            df, forecast_out = self.get_final_dataframe()
+        else:
+            forecast_out = int(math.ceil(self._record_percent_to_predict * len(df)))
 
-        # Synthetic data - Added only Averaging  in iterations
-        # final_Round = False
-        # for i in range(2):
-        #     if i == 1:
-        #         add_synthetic_average_data_boolean = False
-        #         df, forecast_out = self.get_final_dataframe()  # Added date
-        #     else:
-        #         add_synthetic_average_data_boolean = True
-        #         df, forecast_out = self.get_final_dataframe_synthetic_data(3,1)                # Added date
-        #
-
-        # implementation after synthetic data -
-        df, forecast_out = self.get_final_dataframe()  # turn to note if using added synthetic data
-
+        # setting&prediction - ml model
         if 'Date' not in df.columns:
             df['Date'] = pd.to_datetime(self._table_index)
         df_lately = df[-forecast_out:]
         df_lately = df_lately['Col']
-        X = np.array(df.drop(labels=['Label', 'Date'],
-                             axis=1))  # All values of df[Col] (with Nan). Label = Values after shifting 5% up
+        X = np.array(df.drop(labels=['Label', 'Date'], axis=1))  # All values of df[Col] (with Nan). Label = Values after shifting 5% up
         X = preprocessing.scale(X)  # Normalizing
         X_lately = X[-forecast_out:]  # The last 5% of df[Col] - for example the last 180 days from 10 years
         X = X[:-forecast_out]  # The first 95% of df[Col] - for example the first X days from 10 years
@@ -161,38 +136,15 @@ class Analyze:
         # for each day in df, the value in Col is the real value of the stock,
         # and the value in Label is the value in X days after, due to the shift (180 days if its 10 years).
         # X - df[Col] , y - df[Label] - both 95% of original dataframe
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=float(test_size_machine_learning)
-        )
-
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=float(test_size_machine_learning))
         clf = LinearRegression()
         clf.fit(X_train, y_train)  # training model - according to "test_size_machine_learning" - X% of training set
 
-        ################# prediction success rates
         # Make predictions for the test set
         y_pred_test = clf.predict(X_test)
         # Calculate evaluation metrics for the test set
-        mae, mse, rmse, r2 = self.evaluation_metrics_of_ml_model(y_test, y_pred_test)
-        # mae = mean_absolute_error(y_test, y_pred_test)
-        # mse = mean_squared_error(y_test, y_pred_test)
-        # rmse = np.sqrt(mse)
-        # r2 = r2_score(y_test, y_pred_test)
-        evaluation_metrics = {
-            'Model': "linear_regression_model",
-            "test_size_machine_learning": test_size_machine_learning,
-            'self._returns_stock': self._returns_stock,
-            # 'add_synthetic_average_data_boolean': add_synthetic_average_data_boolean,
-            # 'add_synthetic_doubled_data_boolean': add_synthetic_doubled_data_boolean,
-            'MAE': mae,
-            'MSE': mse,
-            'RMSE': rmse,
-            'R2': r2,
-            'Sum_evaluation_metrics': mae+mse+rmse
-        }
-        #################
 
         forecast = clf.predict(X_lately)
-
         forecast_dates = pd.date_range(start=df['Date'].iloc[-1], periods=forecast_out + 1, freq='D')[1:]
         forecast_df = pd.DataFrame(index=forecast_dates, columns=['Forecast'])
         forecast_df['Forecast'] = forecast
@@ -203,39 +155,39 @@ class Analyze:
         #forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(combined_df)
         forecast_with_historical_returns_annual, expected_returns = 1, 1
 
-        # **Evaluation Metrics CSV - Start**
-        evaluation_metrics['Number of Rows'] = combined_df.shape[0]
-        evaluation_metrics_df = pd.DataFrame([evaluation_metrics])
-
-        desired_directory = os.getcwd()
-        os.chdir(desired_directory)
-        # Specify file path for evaluation_metrics.csv in the desired directory
-        file_path = os.path.join(desired_directory, 'evaluation_metrics.csv')
-
-        if not final_Round:
-            self.evaluation_metrics_of_ml_model(evaluation_metrics_df)
-            # file_path = 'evaluation_metrics.csv'
-            # if not os.path.isfile(file_path):
-            #     evaluation_metrics_df.to_csv(file_path, index=False)
-            # else:
-            #     evaluation_metrics_df.to_csv(file_path, mode='a', header=False, index=False)
-            # # **Evaluation Metrics CSV - End**
+        if evaluate_model:
+            self.evaluation_metrics_of_ml_model(y_test, y_pred_test, test_size_machine_learning, "LinearRegression", combined_df.shape[0])
 
         return combined_df, forecast_with_historical_returns_annual, expected_returns
 
 
-    def arima_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
-        df, forecast_out = self.get_final_dataframe()
+    def arima_model(self, evaluate_model=False, df=None) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
+
+        # df will not be None in case of evaluation ml models
+        if df is None:
+            df, forecast_out = self.get_final_dataframe()
+        else:
+            forecast_out = int(math.ceil(self._record_percent_to_predict * len(df)))
+        df_size=df.shape[0]
 
         # ARIMA requires datetime index for time series data
+        # if 'Date' not in df.columns:
+        #     first_date = df['Date'].iloc[0]
+        #     periods_time = len(df['Date'])
         df.index = pd.to_datetime(self._table_index, format='%Y-%m-%d')
+            # df = pd.DataFrame({
+            #     'Date': pd.date_range(start=first_date, periods=periods_time),
+            #     'Col': df['Date']
+            # })
 
+        actuals = df[-forecast_out:]['Col']  # The last 5% of df[Col] - for example the last 180 days from 10 years
         # Perform ARIMA forecasting
-        model: pm.ARIMA = pm.auto_arima(df['Col'], seasonal=False, suppress_warnings=True, stepwise=False)
+        model: pm.ARIMA = pm.auto_arima(df['Col'], seasonal=False, suppress_warnings=False, stepwise=False)
         forecast, conf_int = model.predict(n_periods=forecast_out, return_conf_int=True)
 
         df['Forecast'] = np.nan
-        df.loc[df.index[-forecast_out]:, 'Forecast'] = forecast
+        df.loc[df.index[-forecast_out]:, 'Forecast'] = forecast.array
+
 
         # Add dates
         last_date = df.iloc[-1].name
@@ -247,8 +199,15 @@ class Analyze:
             next_unix += SINGLE_DAY
             df.loc[next_date] = [np.nan for _ in range(len(df.columns) - 1)] + [i]
 
-        forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df)
+
+        ################# prediction success rates
+        if evaluate_model:
+            self.evaluation_metrics_of_ml_model(actuals, forecast, forecast_out/df_size, "Arima", df_size)
+
+        # forecast_with_historical_returns_annual, expected_returns = self.calculate_returns(df)
+        forecast_with_historical_returns_annual, expected_returns = 1, 1
         return df, forecast_with_historical_returns_annual, expected_returns
+
 
     def lstm_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble]:
         df, forecast_out = self.get_final_dataframe()
@@ -258,10 +217,17 @@ class Analyze:
 
         return df, forecast_with_historical_returns_annual, expected_returns
 
-    def prophet_model(self) -> tuple[pd.DataFrame, np.longdouble, np.longdouble, plt]:
-        df, forecast_out = self.get_final_dataframe()
-        df.index = pd.to_datetime(self._table_index)
+    def prophet_model(self, evaluate_model=False, df=None) -> tuple[pd.DataFrame, np.longdouble, np.longdouble, plt]:
 
+        # df will not be None in case of evaluation ml models
+        if df is None:
+            df, forecast_out = self.get_final_dataframe()
+        else:
+            forecast_out = int(math.ceil(self._record_percent_to_predict * len(df)))
+        df_size=df.shape[0]
+
+
+        df.index = pd.to_datetime(self._table_index)
         # Prepare the data for Prophet
         df_prophet: pd.DataFrame = pd.DataFrame({'ds': self._table_index, 'y': df['Col']})
 
@@ -314,23 +280,39 @@ class Analyze:
             forecast_with_historical_returns_annual: np.longdouble = ((np.exp(longdouble * np.log1p(
                 yhat.pct_change().mean()))) - 1) * 100
 
+        df_for_metrics = df[df['Col'].notnull() & df['Forecast'].notnull()]
+        if evaluate_model:
+            self.evaluation_metrics_of_ml_model(df_for_metrics['Col'], df_for_metrics['Forecast'], forecast_out/df_size,"Prophet", df_size)
+
         return df, forecast_with_historical_returns_annual, excepted_returns, plt
 
-    def evaluation_metrics_of_ml_model_to_CSV(self,evaluation_metrics_df):
+    def evaluation_metrics_of_ml_model_to_CSV(self, evaluation_metrics_df):
         file_path = 'evaluation_metrics.csv'
+        evaluation_metrics_df = pd.DataFrame([evaluation_metrics_df])
         if not os.path.isfile(file_path):
             evaluation_metrics_df.to_csv(file_path, index=False)
         else:
             evaluation_metrics_df.to_csv(file_path, mode='a', header=False, index=False)
         # **Evaluation Metrics CSV - End**
 
-    def evaluation_metrics_of_ml_model(self,y_test, y_pred_test):
+    def evaluation_metrics_of_ml_model(self,y_test, y_pred_test, test_size_machine_learning, model_name, df_size):
         # Calculate evaluation metrics for the test set
         mae = mean_absolute_error(y_test, y_pred_test)
         mse = mean_squared_error(y_test, y_pred_test)
         rmse = np.sqrt(mse)
         r2 = r2_score(y_test, y_pred_test)
-        return mae, mse, rmse, r2
+
+        evaluation_metrics = {
+            'Model': model_name,
+            "test_size_machine_learning": test_size_machine_learning,
+            'stock_name': self._returns_stock.name,
+            'MAE': mae,
+            'MSE': mse,
+            'RMSE': rmse,
+            'R2': r2,
+            'Number of Rows': df_size
+        }
+        self.evaluation_metrics_of_ml_model_to_CSV(evaluation_metrics)
 
     def add_synthetic_duplicate_rows(self, df, times: int = 2) -> pd.DataFrame:
         new_rows = []
@@ -363,15 +345,23 @@ class Analyze:
 
     def get_final_dataframe_synthetic_data(self, number_of_average_iterations, number_of_duplicate_iterations) -> tuple[pd.DataFrame, int]:
         df: pd.DataFrame = pd.DataFrame({})
-        df['Col'] = self._returns_stock
+        name = self.returns_stock.name
+        if 'Col' not in self._returns_stock:
+            df['Col'] = self._returns_stock
+        else:
+            df['Col'] = self._returns_stock['Col']
+
         df.fillna(value=-0, inplace=True)
         df['Date'] = pd.to_datetime(self._table_index)
-        if number_of_average_iterations:
+        if number_of_average_iterations > 0:
             df = self.add_synthetic_data_Average_rows(df, number_of_average_iterations)
         if number_of_duplicate_iterations > 1:
             df = self.add_synthetic_duplicate_rows(df, number_of_duplicate_iterations)
         forecast_out = int(math.ceil(self._record_percent_to_predict * len(df)))
         df['Label'] = df['Col'].shift(-forecast_out)
+        # self._returns_stock = df
+        self._table_index = pd.to_datetime(df.index)
+        df.name = name
         return df, forecast_out
 
     def get_final_dataframe(self) -> tuple[pd.DataFrame, int]:
@@ -452,7 +442,7 @@ def update_daily_change_with_machine_learning(returns_stock, table_index: pd.Ind
                 df, annual_return_with_forecast, excepted_returns = \
                     analyze.linear_regression_model(test_size_machine_learning)
             elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[1]:  # Arima
-                df, annual_return_with_forecast, excepted_returns = analyze.arima_model()
+                df, annual_return_with_forecast, excepted_returns = analyze.arima_model(test_size_machine_learning)
             elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[2]:  # Gradient Boosting Regressor
                 df, annual_return_with_forecast, excepted_returns = analyze.lstm_model()
             elif selected_ml_model_for_build == settings.MACHINE_LEARNING_MODEL[3]:  # Prophet
@@ -480,7 +470,7 @@ def convert_data_to_tables(location_saving, file_name, stocks_names, num_of_year
 
     # for israeli stocks
     today = datetime.datetime.now()
-    min_start_year = today.year - 20
+    min_start_year = today.year - 10
     min_start_month = today.month
     min_start_day = today.day
     min_date: str = f"{min_start_year}-{min_start_month}-{min_start_day}"
