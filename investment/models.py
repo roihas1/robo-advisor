@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
@@ -28,6 +29,17 @@ class Investment(models.Model):
     stocks_collection_number = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(COLLECTION_MIN), MaxValueValidator(COLLECTION_MAX)], default=COLLECTION_MIN
     )
+    stocks_symbols = ArrayField(
+        models.CharField(max_length=10),
+        blank=True,
+        default=list
+    )
+    stocks_weights = ArrayField(
+        models.FloatField(max_length=20),
+        blank=True,
+        default=list
+    )
+
 
     class Meta:
         app_label = 'investment'

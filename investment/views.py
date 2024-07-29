@@ -41,18 +41,19 @@ def add_investment(request):
         raise Http404
     # investments: QuerySet[Investment] = _investments_list_view(request)
     if request.method == 'POST':
-        amount: int = int(request.headers.get('amount', -1))
+        data = request.data
+        amount = data['amount']
+        stocks_weights = data['stocks_weights']
+        stocks_symbols = data['stocks_symbols']
         if amount > 0:
             investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
             # just an example, need to sort out authentication
             # investor_user = InvestorUser.objects.get(id=5)
             Investment.objects.create(investor_user=investor_user, amount=amount,
-                                      stocks_collection_number=investor_user.stocks_collection_number)
+                                      stocks_collection_number=investor_user.stocks_collection_number,
+                                      stocks_symbols=stocks_symbols, stocks_weights=stocks_weights)
             investor_user.total_investment_amount += amount
             investor_user.save()
-            # save report according to a new investment
-            stocks_weights = investor_user.stocks_weights
-            stocks_symbols = investor_user.stocks_symbols
 
             # Save image
             data_management.view_investment_report(str(request.user.id), amount, stocks_weights, stocks_symbols)
