@@ -86,7 +86,6 @@ def investments_list_view(request):
         # just an example, need to sort out authentication
         # investor_user = InvestorUser.objects.get(id=5)
         investments = list(Investment.objects.filter(investor_user=investor_user, mode=Investment.Mode.USER).values())
-        print(investments)
         return JsonResponse(status=status.HTTP_200_OK, data=investments, safe=False)
 #     else or try except??
 
@@ -94,7 +93,6 @@ def investments_list_view(request):
 @login_required
 @api_view(["POST"])
 def add_investment(request):
-    print('11ds1')
     is_form_filled: bool = _check_if_preferences_form_is_filled(request)
     if is_form_filled is False:
         raise Http404
@@ -196,12 +194,10 @@ def profile_portfolio(request):
 def _check_if_preferences_form_is_filled(request):
     is_form_filled = True
     try:
-        print(2)
         try:
             get_object_or_404(InvestorUser, user=request.user)
         except Exception as e:
             print('error in method')
-        print(3)
     except Http404:
         is_form_filled = False
     return is_form_filled

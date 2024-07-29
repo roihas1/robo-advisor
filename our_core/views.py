@@ -44,7 +44,6 @@ def administrative_tools_form(request):
     elif request.method == 'POST':
         # form = AdministrativeToolsForm(request.POST)
         data = request.data
-        print(data)
         try:
         # if form.is_valid():  # CREATE and UPDATE
             # Access cleaned data from the form
@@ -117,7 +116,6 @@ def capital_market_algorithm_preferences_form(request):
 def capital_market_investment_preferences_form(request):
     try:
         questionnaire_a = get_object_or_404(QuestionnaireA, user=request.user)
-        print(questionnaire_a, "wowwwww")
     except Http404:
         return HttpResponse("You must have an instance of QuestionnaireA to fill this form.", status=404)
 
@@ -130,7 +128,6 @@ def capital_market_investment_preferences_form(request):
 
     if request.method == 'POST':
         # DEBUGGING, without this the code won't work
-        # print("", form.errors)
         # Sum answers' values
         data = request.data
         stocks_collection_number: str = str(data['stocks_symbols'])
@@ -156,7 +153,6 @@ def capital_market_investment_preferences_form(request):
         try:
             investor_user = InvestorUser.objects.get(user=request.user)
             # If we get here, it means that the user is on UPDATE form (there is InvestorUser instance)
-            print("updateeeeeeeeeeeee")
             investor_user.risk_level = risk_level
             investor_user.stocks_collection_number = stocks_collection_number
             investor_user.stocks_symbols = stocks_symbols
