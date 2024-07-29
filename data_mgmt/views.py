@@ -15,6 +15,7 @@ from service.util.graph import helpers
 from service.util import helpers as helpers2
 from service.util import data_management
 
+
 @login_required
 @api_view(["GET"])
 def get_specific_plot(request, type_of_graph):
@@ -74,6 +75,7 @@ def get_specific_plot(request, type_of_graph):
         )
         i = 0
         all_stocks = helpers2.get_all_stocks_table()
+        portfolios_dict = {}
         for stock_list in three_best_portfolios:
             my_dict = stock_list.to_dict()
             final_dict = {}
@@ -83,8 +85,11 @@ def get_specific_plot(request, type_of_graph):
                     name = all_stocks.loc[all_stocks['Symbol'] == stock, 'description'].iloc[0]
                     value_f = next(iter(value.values()))
                     final_dict[name + " - " + key] = value_f
-            portfolios_dict[labels[i]]['stocks'] = final_dict
+
+            # portfolios_dict[labels[i]]['stocks'] = final_dict
+            portfolios_dict[labels[i]] = final_dict
             i += 1
+
         return JsonResponse(status=status.HTTP_200_OK, data=portfolios_dict, safe=False)
     elif type_of_graph == 3:
         # plot_stat_model_graph
