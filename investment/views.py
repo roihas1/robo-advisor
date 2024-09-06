@@ -44,11 +44,14 @@ def add_investment(request):
         data = request.data
         amount = data['amount']
         stocks_weights = data['stocks_weights']
-        stocks_symbols = data['stocks_symbols']
+
         if amount > 0:
             investor_user: InvestorUser = get_object_or_404(InvestorUser, user=request.user)
+            stocks_symbols = data_management.get_stocks_symbols_from_collection(investor_user.stocks_collection_number)
+
             # just an example, need to sort out authentication
             # investor_user = InvestorUser.objects.get(id=5)
+
             Investment.objects.create(investor_user=investor_user, amount=amount,
                                       stocks_collection_number=investor_user.stocks_collection_number,
                                       stocks_symbols=stocks_symbols, stocks_weights=stocks_weights)
@@ -59,8 +62,12 @@ def add_investment(request):
             data_management.view_investment_report(str(request.user.id), amount, stocks_weights, stocks_symbols)
             investments = list(
                 Investment.objects.filter(investor_user=investor_user, mode=Investment.Mode.USER).values())
-            investments.insert(0, ('new invetsment is of amount : ', amount))
-            return JsonResponse(status=status.HTTP_200_OK, data=investments, safe=False)
+            investments.insert(0, ('new investment is of amount : ', amount))
+
+            response_data = {
+                'message': 'Investment added successfully'
+            }
+            return JsonResponse(status=status.HTTP_200_OK, data=response_data, safe=False)
         else:
             raise ValueError('Invalid amount value')
     else:
